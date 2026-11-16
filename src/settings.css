@@ -86,10 +86,51 @@
   color: var(--text-primary);
 }
 
-.choice-desc {
-  font-size: 10.5px;
-  line-height: 1.3;
-  color: var(--text-secondary);
+.choice-grid-narrow {
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+}
+
+/* A binder shape: one tab at its real size (the ribbon is 53px wide, a tab
+   47px of that), drawn with the same outline the ribbon uses. */
+.tab-style-frame.binder-card-frame {
+  padding: 0;
+  background: transparent;
+}
+
+.binder-frame {
+  display: block;
+  width: 53px;
+  padding: 8px 0;
+  border-radius: 4px;
+  background:
+    linear-gradient(to right, rgba(0, 0, 0, 0.22), transparent 18px),
+    var(--bg-strip);
+}
+
+.binder-swatch {
+  --divider: var(--accent);
+  --tab-bg: color-mix(in srgb, var(--divider) 28%, var(--bg-strip));
+  --tab-edge: color-mix(in srgb, var(--divider) 75%, var(--bg-strip));
+  position: relative;
+  display: block;
+  width: calc(100% - var(--binder-reach));
+  height: calc(var(--binder-tab-h) + 2 * var(--binder-flare));
+  background:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to right, rgba(0, 0, 0, 0.4), transparent 5px),
+    linear-gradient(to right, transparent calc(100% - 5px), var(--tab-edge) calc(100% - 3px)),
+    var(--tab-bg);
+}
+
+.binder-swatch-logo {
+  position: absolute;
+  top: calc(16px + var(--binder-flare));
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--divider);
+  opacity: 0.85;
 }
 
 /* A theme: its ribbon, toolbar and accent, in its own colours. */

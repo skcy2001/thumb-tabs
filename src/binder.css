@@ -19,7 +19,8 @@
 [data-divider='4'] { --divider: #aecbe6; } /* sky */
 [data-divider='5'] { --divider: #cbb7e6; } /* lavender */
 
-html[data-tab-style='binder'] {
+html[data-tab-style='binder'],
+.binder-swatch {
   --binder-tab-h: 88px;
   --binder-slant: 10px; /* how much the top and bottom edges slope */
   --binder-round: 8px;  /* rounding at the outer corners */
@@ -27,30 +28,9 @@ html[data-tab-style='binder'] {
   --binder-flare: 12px; /* radius of the curves where a tab meets the page */
   --binder-reach: 6px;  /* gap left at the outer edge */
   --binder-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  /* The divider outline, shared by the tabs and the add-tab button. Inner
-     (page) edge on the left for a right dock; mirrored for a left dock. */
-  --binder-shape-right: shape(
-    from 0 0,
-    curve to var(--binder-flare) var(--binder-flare) with 0 calc(var(--binder-flare) * 0.7),
-    line to calc(100% - var(--binder-round)) calc(var(--binder-flare) + var(--binder-slant) - var(--binder-round) * 0.3),
-    curve to 100% calc(var(--binder-flare) + var(--binder-slant) + var(--binder-round)) with 100% calc(var(--binder-flare) + var(--binder-slant)),
-    line to 100% calc(100% - var(--binder-flare) - var(--binder-slant) - var(--binder-round)),
-    curve to calc(100% - var(--binder-round)) calc(100% - var(--binder-flare) - var(--binder-slant) + var(--binder-round) * 0.3) with 100% calc(100% - var(--binder-flare) - var(--binder-slant)),
-    line to var(--binder-flare) calc(100% - var(--binder-flare)),
-    curve to 0 100% with 0 calc(100% - var(--binder-flare) * 0.7),
-    close
-  );
-  --binder-shape-left: shape(
-    from 100% 0,
-    curve to calc(100% - var(--binder-flare)) var(--binder-flare) with 100% calc(var(--binder-flare) * 0.7),
-    line to var(--binder-round) calc(var(--binder-flare) + var(--binder-slant) - var(--binder-round) * 0.3),
-    curve to 0 calc(var(--binder-flare) + var(--binder-slant) + var(--binder-round)) with 0 calc(var(--binder-flare) + var(--binder-slant)),
-    line to 0 calc(100% - var(--binder-flare) - var(--binder-slant) - var(--binder-round)),
-    curve to var(--binder-round) calc(100% - var(--binder-flare) - var(--binder-slant) + var(--binder-round) * 0.3) with 0 calc(100% - var(--binder-flare) - var(--binder-slant)),
-    line to calc(100% - var(--binder-flare)) calc(100% - var(--binder-flare)),
-    curve to 100% 100% with 100% calc(100% - var(--binder-flare) * 0.7),
-    close
-  );
+  /* The divider outline, shared by the tabs and the add-tab button, is set on
+     the root as --binder-shape-right / --binder-shape-left (src/binderShapes.ts)
+     from the chosen shape. */
 }
 
 /* ---- Ribbon backdrop: binder board, page edge drawn as a 1px line ---- */

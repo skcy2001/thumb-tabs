@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { TAB_STYLES, THEMES, type TabStyleId, type ThemeId } from '../../shared/types'
+import { binderShape, binderShapeIds } from '../binderShapes'
+import { THEMES, type BinderShapeId, type ThemeId } from '../../shared/types'
 import { useAppearance } from '../state/useAppearance'
 
 const THEME_LABEL: Record<ThemeId, string> = {
@@ -8,54 +9,53 @@ const THEME_LABEL: Record<ThemeId, string> = {
   midnight: 'Midnight',
   graphite: 'Graphite',
   forest: 'Forest',
-  light: 'Light',
 }
 
-const TAB_STYLE_INFO: Record<TabStyleId, { label: string; description: string }> = {
-  binder: { label: 'Binder', description: 'Coloured dividers, with a drag grip' },
-  classic: { label: 'Classic', description: 'Plain strip with an accent bar' },
-  pill: { label: 'Pill', description: 'Rounded blocks' },
-  chrome: { label: 'Chrome', description: 'Browser-style tabs, no drag handle' },
+const BINDER_LABEL: Record<BinderShapeId, string> = {
+  wave: 'Wave',
+  rounded: 'Rounded',
+  slant: 'Slant',
+  shoulder: 'Shoulder',
+  notch: 'Notch',
+  step: 'Step',
+  dome: 'Dome',
+  scallop: 'Scallop',
+  crown: 'Crown',
 }
 
-/** A miniature ribbon in each tab shape, drawn in the current theme's colours. */
-function TabStylePreview({ style }: { style: TabStyleId }) {
-  const tab = (y: number, fill: string, active = false) => {
-    switch (style) {
-      case 'binder':
-        return <path key={y} d={`M2 ${y} q0 3 4 4 L28 ${y + 5} q4 1 4 5 v8 q0 4 -4 5 L6 ${y + 24} q-4 1 -4 4 Z`} fill={fill} />
-      case 'classic':
-        return (
-          <g key={y}>
-            <rect x="4" y={y + 2} width="26" height="24" rx="5" fill={active ? 'var(--bg-active)' : 'none'} />
-            {active && <rect x="0" y={y + 6} width="3" height="16" rx="1.5" fill="var(--accent)" />}
-            <circle cx="17" cy={y + 14} r="5" fill={fill} />
-          </g>
-        )
-      case 'pill':
-        return (
-          <g key={y}>
-            <rect x="4" y={y + 2} width="26" height="24" rx="10" fill={active ? 'var(--accent)' : 'var(--bg-active)'} opacity={active ? 0.6 : 1} />
-            <circle cx="17" cy={y + 14} r="4" fill="var(--text-secondary)" />
-          </g>
-        )
-      case 'chrome':
-        return (
-          <g key={y}>
-            {active
-              ? <path d={`M0 ${y - 4} q0 4 4 4 H0 Z M2 ${y} H24 q8 0 8 8 v10 q0 8 -8 8 H2 Z M0 ${y + 26} q4 0 4 4 H0 Z`} fill="var(--bg-toolbar)" stroke="var(--border)" strokeWidth="0.75" />
-              : <rect x="2" y={y + 2} width="24" height="22" rx="6" fill="var(--bg-active)" opacity="0.5" />}
-            <circle cx="16" cy={y + 14} r="4" fill="var(--text-secondary)" />
-          </g>
-        )
-    }
-  }
-  const colors = ['var(--accent)', '#f4c4a0', '#bcd7ad']
+/** A miniature ribbon in a flat tab shape, drawn in the current theme's colours. */
+function TabStylePreview({ style }: { style: 'classic' | 'chrome' }) {
+  const tab = (y: number, active: boolean) =>
+    style === 'classic' ? (
+      <g key={y}>
+        <rect x="4" y={y + 2} width="26" height="24" rx="5" fill={active ? 'var(--bg-active)' : 'none'} />
+        {active && <rect x="0" y={y + 6} width="3" height="16" rx="1.5" fill="var(--accent)" />}
+        <circle cx="17" cy={y + 14} r="5" fill="var(--text-secondary)" />
+      </g>
+    ) : (
+      <g key={y}>
+        {active
+          ? <path d={`M0 ${y - 4} q0 4 4 4 H0 Z M2 ${y} H24 q8 0 8 8 v10 q0 8 -8 8 H2 Z M0 ${y + 26} q4 0 4 4 H0 Z`} fill="var(--bg-toolbar)" stroke="var(--border)" strokeWidth="0.75" />
+          : <rect x="2" y={y + 2} width="24" height="22" rx="6" fill="var(--bg-active)" opacity="0.5" />}
+        <circle cx="16" cy={y + 14} r="4" fill="var(--text-secondary)" />
+      </g>
+    )
   return (
     <svg className="tab-style-preview" viewBox="0 0 34 100" width="34" height="100" aria-hidden="true">
       <rect width="34" height="100" rx="4" fill={style === 'chrome' ? 'var(--bg-dark)' : 'var(--bg-strip)'} />
-      {[6, 36, 66].map((y, i) => tab(y, style === 'binder' ? colors[i] : 'var(--text-secondary)', i === 1))}
+      {[6, 36, 66].map((y, i) => tab(y, i === 1))}
     </svg>
+  )
+}
+
+/** One binder tab at the size it has in the ribbon, so the outline reads true. */
+function BinderPreview({ id, divider }: { id: BinderShapeId; divider: number }) {
+  return (
+    <span className="binder-frame" aria-hidden="true">
+      <span className="binder-swatch" data-divider={divider} style={{ clipPath: binderShape(id, 'right') }}>
+        <span className="binder-swatch-logo" />
+      </span>
+    </span>
   )
 }
 
@@ -63,8 +63,8 @@ type Page = 'menu' | 'appearance'
 
 /**
  * Full-pane settings: a short menu of sections, today just Appearance. Opens
- * from "Settings…" in the toolbar's or the ribbon's right-click menu, over the
- * same space the toolbar customizer uses.
+ * from the Settings button at the bottom of the ribbon, over the same space
+ * the toolbar customizer uses.
  */
 export function SettingsPanel({ onClose }: { onClose: () => void }) {
   const [page, setPage] = useState<Page>('menu')
@@ -98,7 +98,6 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
             </span>
             <span className="customizer-text">
               <span className="customizer-name">Appearance</span>
-              <span className="customizer-desc">Theme and tab shape</span>
             </span>
             <span className="settings-chevron" aria-hidden="true">›</span>
           </button>
@@ -114,7 +113,7 @@ function AppearancePage() {
   const [appearance, update] = useAppearance()
   return (
     <>
-      <Choices title="Theme" hint="Colours for the ribbon and toolbar">
+      <Choices title="Theme">
         {THEMES.map(id => (
           <Choice key={id} selected={appearance.theme === id} label={THEME_LABEL[id]} onSelect={() => update({ theme: id })}>
             <span className="theme-swatch" data-theme={id} aria-hidden="true">
@@ -125,16 +124,29 @@ function AppearancePage() {
           </Choice>
         ))}
       </Choices>
-      <Choices title="Tab shape" hint="How the tabs in the ribbon look">
-        {TAB_STYLES.map(id => (
+      <Choices title="Tab shape">
+        {(['classic', 'chrome'] as const).map(id => (
           <Choice
             key={id}
             selected={appearance.tabStyle === id}
-            label={TAB_STYLE_INFO[id].label}
-            description={TAB_STYLE_INFO[id].description}
+            label={id === 'classic' ? 'Classic' : 'Chrome'}
             onSelect={() => update({ tabStyle: id })}
           >
             <span className="tab-style-frame" data-theme={appearance.theme}><TabStylePreview style={id} /></span>
+          </Choice>
+        ))}
+      </Choices>
+      <Choices title="Binder" wide>
+        {binderShapeIds().map((id, i) => (
+          <Choice
+            key={id}
+            selected={appearance.tabStyle === 'binder' && appearance.binderShape === id}
+            label={BINDER_LABEL[id]}
+            onSelect={() => update({ tabStyle: 'binder', binderShape: id })}
+          >
+            <span className="tab-style-frame binder-card-frame" data-theme={appearance.theme}>
+              <BinderPreview id={id} divider={i % 6} />
+            </span>
           </Choice>
         ))}
       </Choices>
@@ -142,20 +154,18 @@ function AppearancePage() {
   )
 }
 
-function Choices({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
+function Choices({ title, wide, children }: { title: string; wide?: boolean; children: ReactNode }) {
   return (
     <section className="customizer-group">
       <h3>{title}</h3>
-      <p className="customizer-hint">{hint}</p>
-      <div className="choice-grid" role="radiogroup" aria-label={title}>{children}</div>
+      <div className={`choice-grid ${wide ? 'choice-grid-narrow' : ''}`} role="radiogroup" aria-label={title}>{children}</div>
     </section>
   )
 }
 
-function Choice({ selected, label, description, onSelect, children }: {
+function Choice({ selected, label, onSelect, children }: {
   selected: boolean
   label: string
-  description?: string
   onSelect: () => void
   children: ReactNode
 }) {
@@ -163,7 +173,6 @@ function Choice({ selected, label, description, onSelect, children }: {
     <button className={`choice ${selected ? 'selected' : ''}`} type="button" role="radio" aria-checked={selected} onClick={onSelect}>
       {children}
       <span className="choice-label">{label}</span>
-      {description && <span className="choice-desc">{description}</span>}
     </button>
   )
 }

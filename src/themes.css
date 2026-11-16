@@ -67,18 +67,3 @@
   --border: #2c4336;
   --close-btn: #f2907c;
 }
-
-[data-theme='light'] {
-  color-scheme: light;
-  --bg-dark: #e4e0d8;
-  --bg-strip: #ece9e3;
-  --bg-toolbar: #f7f5f1;
-  --bg-hover: #dedad1;
-  --bg-active: #d1ccc1;
-  --accent: #7ba7f5;
-  --accent-hover: #9dbcf8;
-  --text-primary: #1d1b18;
-  --text-secondary: #5f5a52;
-  --border: #cdc7ba;
-  --close-btn: #d13c5a;
-}

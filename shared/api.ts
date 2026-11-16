@@ -24,6 +24,8 @@ export interface SidebarApi {
       anchorHeight: number,
     ) => void
     hidePlayer: () => void
+    /** Brings up the pane with its Settings panel open. */
+    openSettings: () => void
     keepPlayerOpen: () => void
     /** The player has drawn this tab's title and artwork and can be shown. */
     playerReady?: (tabId: number) => void

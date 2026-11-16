@@ -19,9 +19,6 @@ const role: ShellRole =
     : 'pane'
 
 document.documentElement.dataset.role = role
-// Defaults until the first state arrives; the bridge then applies the saved look.
-document.documentElement.dataset.theme = 'cocoa'
-document.documentElement.dataset.tabStyle = 'binder'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

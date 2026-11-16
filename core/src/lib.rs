@@ -82,16 +82,21 @@ fn string_id<'de, D: serde::Deserializer<'de>>(d: D) -> Result<String, D::Error>
     })
 }
 
-pub const THEMES: &[&str] = &["cocoa", "midnight", "graphite", "forest", "light"];
-pub const TAB_STYLES: &[&str] = &["binder", "classic", "pill", "chrome"];
+pub const THEMES: &[&str] = &["cocoa", "midnight", "graphite", "forest"];
+pub const TAB_STYLES: &[&str] = &["binder", "classic", "chrome"];
+pub const BINDER_SHAPES: &[&str] = &[
+    "wave", "rounded", "slant", "shoulder", "notch", "step", "dome", "scallop", "crown",
+];
 
-/// How the shell looks. Both fields name a style the UI defines; anything
+/// How the shell looks. Each field names a style the UI defines; anything
 /// else (a newer build's choice, a hand-edited file) falls back to the default.
+/// `binder_shape` only matters while `tab_style` is "binder".
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Appearance {
     pub theme: String,
     pub tab_style: String,
+    pub binder_shape: String,
 }
 
 impl Default for Appearance {
@@ -99,6 +104,7 @@ impl Default for Appearance {
         Self {
             theme: THEMES[0].into(),
             tab_style: TAB_STYLES[0].into(),
+            binder_shape: BINDER_SHAPES[0].into(),
         }
     }
 }
@@ -111,6 +117,9 @@ impl Appearance {
         }
         if !TAB_STYLES.contains(&self.tab_style.as_str()) {
             self.tab_style = default.tab_style;
+        }
+        if !BINDER_SHAPES.contains(&self.binder_shape.as_str()) {
+            self.binder_shape = default.binder_shape;
         }
     }
 }
@@ -500,9 +509,18 @@ mod tests {
         let mut settings = Settings::default();
         settings.appearance.theme = "forest".into();
         settings.appearance.tab_style = "sparkles".into();
+        settings.appearance.binder_shape = "crown".into();
         settings.sanitize();
         assert_eq!(settings.appearance.theme, "forest");
         assert_eq!(settings.appearance.tab_style, "binder");
+        assert_eq!(settings.appearance.binder_shape, "crown");
+
+        // Themes and shapes removed from the picker (light, pill) fall back.
+        settings.appearance.theme = "light".into();
+        settings.appearance.tab_style = "pill".into();
+        settings.appearance.binder_shape = "gone".into();
+        settings.sanitize();
+        assert_eq!(settings.appearance, Appearance::default());
 
         settings.appearance.theme = "neon".into();
         settings.sanitize();
