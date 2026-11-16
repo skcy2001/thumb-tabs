@@ -13,14 +13,10 @@ const THEME_LABEL: Record<ThemeId, string> = {
 
 const BINDER_LABEL: Record<BinderShapeId, string> = {
   wave: 'Wave',
+  chamfer: 'Chamfer',
   rounded: 'Rounded',
-  slant: 'Slant',
-  shoulder: 'Shoulder',
-  notch: 'Notch',
-  step: 'Step',
-  dome: 'Dome',
-  scallop: 'Scallop',
-  crown: 'Crown',
+  cove: 'Cove',
+  trapezoid: 'Trapezoid',
 }
 
 /** A miniature ribbon in a flat tab shape, drawn in the current theme's colours. */

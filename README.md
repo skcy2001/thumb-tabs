@@ -42,7 +42,7 @@ Node ships with the app. Formerly part of Tabbar (originally Sidebar).
 - Settings (the gear tab at the bottom of the ribbon) with an Appearance page:
   four colour themes (Cocoa, Midnight, Graphite, Forest), Classic and Chrome
   tab shapes (Chrome draws browser-style tabs with no drag handle; dock left or
-  right from the ribbon's right-click menu), and nine Binder shapes. Changes
+  right from the ribbon's right-click menu), and five Binder shapes. Changes
   apply at once and are remembered.
 - Native Windows context menus open inward from the original click position,
   with automatic vertical adjustment near the screen boundary.

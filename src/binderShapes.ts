@@ -44,22 +44,16 @@ const slanted = (rise: string): Node[] => [
 
 const TOPS: Record<BinderShapeId, Node[]> = {
   wave: slanted(S),
-  rounded: roundedEnd(F),
-  slant: slanted('16px'),
-  shoulder: [line(at(45), F), line(at(45), `${F} + 7px`), ...roundedEnd(`${F} + 7px`)],
-  notch: [line(at(45), F), line(at(45), `${F} + 7px`), ...roundedEnd(`${F} + 7px`, '3px')],
-  step: [
-    line(at(35), F), line(at(35), `${F} + 6px`),
-    line(at(65), `${F} + 6px`), line(at(65), `${F} + 13px`),
-    ...roundedEnd(`${F} + 13px`),
+  // Flat outer edge with its corners cut off.
+  chamfer: [line(beforeOuter('9px'), F), line(outer, `${F} + 9px`)],
+  rounded: roundedEnd(F, '12px'),
+  // Flat outer edge with small concave coves at the corners.
+  cove: [
+    line(beforeOuter('8px'), F),
+    curve(outer, `${F} + 8px`, beforeOuter('8px'), `${F} + 8px`),
   ],
-  dome: [curve(outer, '50%', outer, F)],
-  scallop: [line(at(35), F), line(at(35), `${F} + 6px`), line(at(62), `${F} + 6px`), curve(outer, '50%', outer, `${F} + 6px`)],
-  crown: [
-    line(at(30), F), line(at(30), `${F} + 5px`),
-    line(at(55), `${F} + 5px`), line(at(55), `${F} + 11px`),
-    curve(outer, '50%', outer, `${F} + 11px`),
-  ],
+  // Sharp corners, sides sloping steeply in to a narrower outer edge.
+  trapezoid: [line(outer, `${F} + 20px`)],
 }
 
 export function binderShapeIds(): BinderShapeId[] {

@@ -225,21 +225,21 @@ test('settings opens from the ribbon button; appearance picks theme, tab shape a
   await expect(panel.locator('.customizer-hint, .choice-desc')).toHaveCount(0)
   await expect(panel.getByRole('radio',{name:'Light'})).toHaveCount(0)
   await expect(panel.getByRole('radio',{name:'Pill'})).toHaveCount(0)
-  await expect(panel.locator('.binder-swatch')).toHaveCount(9)
+  await expect(panel.locator('.binder-swatch')).toHaveCount(5)
   if (process.env.SHOT_DIR) await page.screenshot({path:process.env.SHOT_DIR+'/settings-appearance.png',fullPage:true})
   await panel.getByRole('radio',{name:'Midnight'}).click()
   await expect.poll(()=>page.evaluate(()=>window.testHost.actions.some(a=>a.type==='setAppearance'&&a.theme==='midnight'&&a.tabStyle==='binder'&&a.binderShape==='wave'))).toBe(true)
-  await panel.getByRole('radio',{name:'Dome'}).click()
-  await expect.poll(()=>page.evaluate(()=>window.testHost.actions.some(a=>a.type==='setAppearance'&&a.tabStyle==='binder'&&a.binderShape==='dome'))).toBe(true)
+  await panel.getByRole('radio',{name:'Cove'}).click()
+  await expect.poll(()=>page.evaluate(()=>window.testHost.actions.some(a=>a.type==='setAppearance'&&a.tabStyle==='binder'&&a.binderShape==='cove'))).toBe(true)
   await panel.getByRole('radio',{name:'Chrome'}).click()
   await expect.poll(()=>page.evaluate(()=>window.testHost.actions.some(a=>a.type==='setAppearance'&&a.theme==='midnight'&&a.tabStyle==='chrome'))).toBe(true)
   // The native side stores it and broadcasts state; the page restyles from that.
-  await page.evaluate(()=>{const s=structuredClone(window.testHost.state);s.settings.appearance={theme:'midnight',tabStyle:'chrome',binderShape:'dome'};return window.testHost.update(s)})
+  await page.evaluate(()=>{const s=structuredClone(window.testHost.state);s.settings.appearance={theme:'midnight',tabStyle:'chrome',binderShape:'cove'};return window.testHost.update(s)})
   await expect(page.locator('html')).toHaveAttribute('data-theme','midnight')
   await expect(page.locator('html')).toHaveAttribute('data-tab-style','chrome')
   await expect(page.locator('.ribbon-drag-handle')).toBeHidden()
   await expect(panel.getByRole('radio',{name:'Chrome'})).toHaveAttribute('aria-checked','true')
-  await expect(panel.getByRole('radio',{name:'Dome'})).toHaveAttribute('aria-checked','false')
+  await expect(panel.getByRole('radio',{name:'Cove'})).toHaveAttribute('aria-checked','false')
   await panel.getByRole('button',{name:'Done'}).click()
   await expect(panel).toHaveCount(0)
   expect(errors).toEqual([])
@@ -248,7 +248,7 @@ test('every tab shape and theme renders in the ribbon; chrome has no drag handle
   const errors=await mount(page,'ribbon')
   await page.setViewportSize({width:53,height:420})
   const looks=[
-    ...['wave','rounded','slant','shoulder','notch','step','dome','scallop','crown'].map(binderShape=>({tabStyle:'binder',binderShape})),
+    ...['wave','chamfer','rounded','cove','trapezoid'].map(binderShape=>({tabStyle:'binder',binderShape})),
     {tabStyle:'classic',binderShape:'wave'},{tabStyle:'chrome',binderShape:'wave'},
   ]
   for (const side of ['right','left']) for (const look of looks) for (const theme of ['cocoa','midnight']) {

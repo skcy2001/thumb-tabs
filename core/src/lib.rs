@@ -85,7 +85,7 @@ fn string_id<'de, D: serde::Deserializer<'de>>(d: D) -> Result<String, D::Error>
 pub const THEMES: &[&str] = &["cocoa", "midnight", "graphite", "forest"];
 pub const TAB_STYLES: &[&str] = &["binder", "classic", "chrome"];
 pub const BINDER_SHAPES: &[&str] = &[
-    "wave", "rounded", "slant", "shoulder", "notch", "step", "dome", "scallop", "crown",
+    "wave", "chamfer", "rounded", "cove", "trapezoid",
 ];
 
 /// How the shell looks. Each field names a style the UI defines; anything
@@ -509,11 +509,11 @@ mod tests {
         let mut settings = Settings::default();
         settings.appearance.theme = "forest".into();
         settings.appearance.tab_style = "sparkles".into();
-        settings.appearance.binder_shape = "crown".into();
+        settings.appearance.binder_shape = "cove".into();
         settings.sanitize();
         assert_eq!(settings.appearance.theme, "forest");
         assert_eq!(settings.appearance.tab_style, "binder");
-        assert_eq!(settings.appearance.binder_shape, "crown");
+        assert_eq!(settings.appearance.binder_shape, "cove");
 
         // Themes and shapes removed from the picker (light, pill) fall back.
         settings.appearance.theme = "light".into();

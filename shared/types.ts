@@ -80,7 +80,7 @@ export type ThemeId = (typeof THEMES)[number]
 export const TAB_STYLES = ['binder', 'classic', 'chrome'] as const
 export type TabStyleId = (typeof TAB_STYLES)[number]
 /** Outlines for the binder tab style; the others ignore it. */
-export const BINDER_SHAPES = ['wave', 'rounded', 'slant', 'shoulder', 'notch', 'step', 'dome', 'scallop', 'crown'] as const
+export const BINDER_SHAPES = ['wave', 'chamfer', 'rounded', 'cove', 'trapezoid'] as const
 export type BinderShapeId = (typeof BINDER_SHAPES)[number]
 
 /** The look of the shell, saved with the other settings. */
