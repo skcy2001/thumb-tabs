@@ -1,22 +1,37 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { SidebarApi } from '../shared/api'
-import type { DownloadInfo, PinnedSiteInfo, Side, TabInfo } from '../shared/types'
+import {
+  DEFAULT_APPEARANCE, TAB_STYLES, THEMES,
+  type Appearance, type DownloadInfo, type PinnedSiteInfo, type Side, type TabInfo,
+} from '../shared/types'
 
 interface State {
   tabs: (Omit<TabInfo, 'isActive' | 'pinnedSiteId'> & { pinId?: string })[]
   active: number | null
   collapsed: boolean
-  settings: { pins: PinnedSiteInfo[]; side: Side; keepOpen?: boolean }
+  settings: { pins: PinnedSiteInfo[]; side: Side; keepOpen?: boolean; appearance?: Partial<Appearance> }
   downloads: DownloadInfo[]
   playerTarget: number | null
   fullscreen: boolean
 }
 const subscribers = new Set<(state: State) => void>()
 let cached: State | undefined
+/** The saved look, with anything this build does not know replaced by the default. */
+function appearance(s: State): Appearance {
+  const saved = s.settings.appearance
+  return {
+    theme: THEMES.find(t => t === saved?.theme) ?? DEFAULT_APPEARANCE.theme,
+    tabStyle: TAB_STYLES.find(t => t === saved?.tabStyle) ?? DEFAULT_APPEARANCE.tabStyle,
+  }
+}
 function accept(state: State) {
   cached = state
-  document.documentElement.dataset.fullscreen = String(state.fullscreen)
+  const root = document.documentElement
+  root.dataset.fullscreen = String(state.fullscreen)
+  const look = appearance(state)
+  root.dataset.theme = look.theme
+  root.dataset.tabStyle = look.tabStyle
   subscribers.forEach(cb => cb(state))
 }
 const ready = listen<State>('browser-state', e => accept(e.payload))
@@ -53,6 +68,19 @@ const query = <T>(kind: string, id?: number) => invoke<T>('query', { kind, id })
 })
 
 const api: SidebarApi = {
+  appearance: {
+    get: async () => appearance(await state()),
+    onChange: cb => {
+      let last = ''
+      return subscribe(appearance, look => {
+        const key = `${look.theme}/${look.tabStyle}`
+        if (key === last) return
+        last = key
+        cb(look)
+      })
+    },
+    set: look => act('setAppearance', { theme: look.theme, tabStyle: look.tabStyle }),
+  },
   shell: {
     commitPlacement: (x, y) => act('placement', { x, y }),
     setDragging: dragging => act('dragging', { dragging }),

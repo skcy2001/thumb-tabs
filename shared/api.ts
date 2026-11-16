@@ -1,6 +1,12 @@
-import type { TabInfo, TabAction, Side, PinnedSiteInfo, MediaPlayerInfo, DownloadInfo } from './types'
+import type { TabInfo, TabAction, Side, PinnedSiteInfo, MediaPlayerInfo, DownloadInfo, Appearance } from './types'
 
 export interface SidebarApi {
+  /** Colour theme and tab shape, shared by every window. */
+  appearance: {
+    get: () => Promise<Appearance>
+    onChange: (cb: (appearance: Appearance) => void) => () => void
+    set: (appearance: Appearance) => void
+  }
   /** Ribbon shell: snap-to-edge placement from a screen point (e.g. pointer release after drag). */
   shell: {
     commitPlacement: (screenX: number, screenY: number) => void
@@ -37,7 +43,7 @@ export interface SidebarApi {
     onAddressFocusRequest: (cb: () => void) => () => void
     /** Native right-click menu for the page's top bar. */
     showToolbarMenu?: () => void
-    /** Commands from that menu the page carries out itself (copyLink, customize). */
+    /** Commands from that menu the page carries out itself (copyLink, customize, settings). */
     onToolbarCommand?: (cb: (command: string) => void) => () => void
     getCollapsed: () => Promise<boolean>
     getSide: () => Promise<Side>

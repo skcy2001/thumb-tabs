@@ -7,18 +7,6 @@
 :root {
   --ribbon-w: 53px;
   --toolbar-h: 44px;
-  /* Brown + baby pink theme */
-  --bg-dark: #1a1210;      /* deep cocoa */
-  --bg-strip: #221714;     /* ribbon */
-  --bg-toolbar: #241a16;   /* toolbar */
-  --bg-hover: #2b1f1a;     /* hover */
-  --bg-active: #34251f;    /* active */
-  --accent: #e8a3f3;       /* logo pink */
-  --accent-hover: #f0c0f7; /* lighter logo pink */
-  --text-primary: #f7efe9; /* warm off-white */
-  --text-secondary: #c8b6ad;
-  --border: #3b2a24;
-  --close-btn: #f28aa6;
   --radius: 8px;
 }
 

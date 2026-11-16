@@ -1,0 +1,84 @@
+/*
+ * Colour themes — [data-theme="…"].
+ *
+ * Each one is only a palette; everything else reads these variables. The
+ * attribute sits on <html> to theme a window, and on a single element for the
+ * swatches in Settings > Appearance. The ids are listed in shared/types.ts
+ * and core/src/lib.rs. "cocoa" (brown and pink) is the default.
+ */
+
+:root,
+[data-theme='cocoa'] {
+  color-scheme: dark;
+  --bg-dark: #1a1210;      /* deep cocoa */
+  --bg-strip: #221714;     /* ribbon */
+  --bg-toolbar: #241a16;   /* toolbar */
+  --bg-hover: #2b1f1a;     /* hover */
+  --bg-active: #34251f;    /* active */
+  --accent: #e8a3f3;       /* logo pink */
+  --accent-hover: #f0c0f7; /* lighter logo pink */
+  --text-primary: #f7efe9; /* warm off-white */
+  --text-secondary: #c8b6ad;
+  --border: #3b2a24;
+  --close-btn: #f28aa6;
+}
+
+[data-theme='midnight'] {
+  color-scheme: dark;
+  --bg-dark: #0e1320;
+  --bg-strip: #131a2b;
+  --bg-toolbar: #161e32;
+  --bg-hover: #1e2842;
+  --bg-active: #273459;
+  --accent: #7aa8ff;
+  --accent-hover: #a3c2ff;
+  --text-primary: #e9eefb;
+  --text-secondary: #9fb0d0;
+  --border: #29365a;
+  --close-btn: #ff8a9b;
+}
+
+[data-theme='graphite'] {
+  color-scheme: dark;
+  --bg-dark: #121212;
+  --bg-strip: #191919;
+  --bg-toolbar: #1d1d1d;
+  --bg-hover: #272727;
+  --bg-active: #323232;
+  --accent: #4fd1c5;
+  --accent-hover: #7de3da;
+  --text-primary: #f0f0f0;
+  --text-secondary: #a8a8a8;
+  --border: #303030;
+  --close-btn: #ff7a85;
+}
+
+[data-theme='forest'] {
+  color-scheme: dark;
+  --bg-dark: #0f1a14;
+  --bg-strip: #15221b;
+  --bg-toolbar: #182720;
+  --bg-hover: #20322a;
+  --bg-active: #294034;
+  --accent: #9bd38a;
+  --accent-hover: #b8e5aa;
+  --text-primary: #eaf3ea;
+  --text-secondary: #a9c1ae;
+  --border: #2c4336;
+  --close-btn: #f2907c;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg-dark: #e4e0d8;
+  --bg-strip: #ece9e3;
+  --bg-toolbar: #f7f5f1;
+  --bg-hover: #dedad1;
+  --bg-active: #d1ccc1;
+  --accent: #7ba7f5;
+  --accent-hover: #9dbcf8;
+  --text-primary: #1d1b18;
+  --text-secondary: #5f5a52;
+  --border: #cdc7ba;
+  --close-btn: #d13c5a;
+}

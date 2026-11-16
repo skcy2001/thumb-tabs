@@ -75,6 +75,19 @@ export interface MediaPlayerInfo {
 
 export type Side = 'left' | 'right'
 
+export const THEMES = ['cocoa', 'midnight', 'graphite', 'forest', 'light'] as const
+export type ThemeId = (typeof THEMES)[number]
+export const TAB_STYLES = ['binder', 'classic', 'pill', 'chrome'] as const
+export type TabStyleId = (typeof TAB_STYLES)[number]
+
+/** The look of the shell, saved with the other settings. */
+export interface Appearance {
+  theme: ThemeId
+  tabStyle: TabStyleId
+}
+
+export const DEFAULT_APPEARANCE: Appearance = { theme: 'cocoa', tabStyle: 'binder' }
+
 export const DEFAULT_SIDE: Side = 'right'
 export const RIBBON_WIDTH = 53
 export const INNER_RESIZE_HANDLE_WIDTH = 4

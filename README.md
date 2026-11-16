@@ -39,6 +39,11 @@ Node ships with the app. Formerly part of Tabbar (originally Sidebar).
   moving back into the page hides it without moving or resizing the page.
 - Sized popups retain `window.opener` and their parent profile for OAuth. Ordinary
   new-window links open in tabs.
+- Settings (right-click the toolbar or the ribbon, then "Settings…") with an
+  Appearance page: five colour themes (Cocoa, Midnight, Graphite, Forest,
+  Light) and four tab shapes (Binder, Classic, Pill, and Chrome, which draws
+  browser-style tabs with no drag handle; dock left or right from the ribbon's
+  right-click menu). Changes apply at once and are remembered.
 - Native Windows context menus open inward from the original click position,
   with automatic vertical adjustment near the screen boundary.
 - Tray controls, open in the default browser, single-instance handoff, and

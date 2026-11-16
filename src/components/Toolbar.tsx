@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import type { DownloadInfo, TabInfo } from '../../shared/types'
 import { TOOLBAR_BUTTONS, useToolbarButtons, type ToolbarButtonDef, type ToolbarButtonId, type ToolbarMode, type ToolbarModes } from './toolbarButtons'
 
+import { SettingsPanel } from './SettingsPanel'
+
 const HOME_URL = 'https://www.google.com/'
 
 interface Props {
@@ -27,13 +29,16 @@ export function Toolbar({
 }: Props) {
   const [editing, setEditing] = useState(false)
   const [keepOpen, setKeepOpen] = useState(false)
-  const [customizing, setCustomizing] = useState(false)
+  const [panel, setPanel] = useState<null | 'customize' | 'settings'>(null)
+  const customizing = panel === 'customize'
+  const setCustomizing = (open: boolean) => setPanel(open ? 'customize' : null)
   const urlRef = useRef<string | undefined>(undefined)
   urlRef.current = activeTab?.url
 
   // Commands from the native toolbar menu that the page carries out itself.
   useEffect(() => window.sidebarApi?.tabs.onToolbarCommand?.(command => {
-    if (command === 'customize') setCustomizing(true)
+    if (command === 'customize') setPanel('customize')
+    if (command === 'settings') setPanel('settings')
     if (command === 'copyLink' && urlRef.current) {
       void navigator.clipboard?.writeText(urlRef.current).catch(() => {})
     }
@@ -41,20 +46,21 @@ export function Toolbar({
   const { modes, setMode, reset } = useToolbarButtons()
 
   // The native page view sits over the pane below the toolbar; step it aside
-  // while the customize panel uses that space.
+  // while the customize or settings panel uses that space.
   useEffect(() => {
-    if (collapsed) setCustomizing(false)
+    if (collapsed) setPanel(null)
   }, [collapsed])
+  const panelOpen = panel !== null
   useEffect(() => {
-    window.sidebarApi?.tabs.setPageHidden?.(customizing)
-    if (!customizing) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setCustomizing(false) }
+    window.sidebarApi?.tabs.setPageHidden?.(panelOpen)
+    if (!panelOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPanel(null) }
     window.addEventListener('keydown', onKey)
     return () => {
       window.removeEventListener('keydown', onKey)
       window.sidebarApi?.tabs.setPageHidden?.(false)
     }
-  }, [customizing])
+  }, [panelOpen])
 
   useEffect(() => {
     const tabs = window.sidebarApi?.tabs
@@ -269,6 +275,7 @@ export function Toolbar({
           {customizing && (
             <ToolbarCustomizer modes={modes} onChange={setMode} onReset={reset} onClose={() => setCustomizing(false)} />
           )}
+          {panel === 'settings' && <SettingsPanel onClose={() => setPanel(null)} />}
         </>
       )}
     </div>

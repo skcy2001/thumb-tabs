@@ -13,7 +13,9 @@ import {
 import { PlayerPreview } from './components/PlayerPreview'
 import './App.css'
 import './binder.css'
+import './tabstyles.css'
 import './customizer.css'
+import './settings.css'
 
 export type ShellRole = 'ribbon' | 'pane' | 'player' | 'edge' | 'downloads'
 

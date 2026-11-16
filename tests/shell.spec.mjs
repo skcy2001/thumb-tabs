@@ -205,6 +205,43 @@ test('the toolbar menu opens a customizer that adds and removes buttons',async({
   await expect(page.getByRole('button',{name:'Keep page open',exact:true})).toBeVisible()
   expect(errors).toEqual([])
 })
+test('settings > appearance picks a theme and tab shape, and chrome hides the drag handle',async({page})=>{
+  const errors=await mount(page)
+  await page.evaluate(()=>window.testHost.emitEvent('toolbar-command','settings'))
+  const panel=page.getByRole('dialog',{name:'Settings'})
+  await expect(panel).toBeVisible()
+  await expect.poll(()=>page.evaluate(()=>window.testHost.actions.some(a=>a.type==='setPageHidden'&&a.hidden===true))).toBe(true)
+  await panel.getByRole('button',{name:/Appearance/}).click()
+  if (process.env.SHOT_DIR) await page.screenshot({path:process.env.SHOT_DIR+'/settings-appearance.png'})
+  await panel.getByRole('radio',{name:'Midnight'}).click()
+  await expect.poll(()=>page.evaluate(()=>window.testHost.actions.some(a=>a.type==='setAppearance'&&a.theme==='midnight'&&a.tabStyle==='binder'))).toBe(true)
+  await panel.getByRole('radio',{name:/Chrome/}).click()
+  await expect.poll(()=>page.evaluate(()=>window.testHost.actions.some(a=>a.type==='setAppearance'&&a.theme==='midnight'&&a.tabStyle==='chrome'))).toBe(true)
+  // The native side stores it and broadcasts state; the page restyles from that.
+  await page.evaluate(()=>{const s=structuredClone(window.testHost.state);s.settings.appearance={theme:'midnight',tabStyle:'chrome'};return window.testHost.update(s)})
+  await expect(page.locator('html')).toHaveAttribute('data-theme','midnight')
+  await expect(page.locator('html')).toHaveAttribute('data-tab-style','chrome')
+  await expect(page.locator('.ribbon-drag-handle')).toBeHidden()
+  await expect(panel.getByRole('radio',{name:/Chrome/})).toHaveAttribute('aria-checked','true')
+  await panel.getByRole('button',{name:'Done'}).click()
+  await expect(panel).toHaveCount(0)
+  if (process.env.SHOT_DIR) await page.screenshot({path:process.env.SHOT_DIR+'/chrome-midnight.png'})
+  expect(errors).toEqual([])
+})
+test('every tab shape and theme renders in the ribbon; chrome has no drag handle',async({page})=>{
+  const errors=await mount(page,'ribbon')
+  await page.setViewportSize({width:53,height:420})
+  for (const side of ['right','left']) for (const tabStyle of ['binder','classic','pill','chrome']) for (const theme of ['cocoa','light']) {
+    await page.evaluate(({side,tabStyle,theme})=>{const s=structuredClone(window.testHost.state);s.settings.side=side;s.settings.appearance={theme,tabStyle};return window.testHost.update(s)},{side,tabStyle,theme})
+    await expect(page.locator('html')).toHaveAttribute('data-tab-style',tabStyle)
+    await expect(page.locator('.ribbon-drag-handle'))[tabStyle==='chrome'?'toBeHidden':'toBeVisible']()
+    if (process.env.SHOT_DIR) {
+      await page.waitForTimeout(300)
+      await page.screenshot({path:`${process.env.SHOT_DIR}/ribbon-${side}-${tabStyle}-${theme}.png`})
+    }
+  }
+  expect(errors).toEqual([])
+})
 test('dragging the pane edge moves a guide and resizes once on release',async({page})=>{
   const errors=await mount(page)
   const handle=page.locator('.pane-outer-resize-handle')

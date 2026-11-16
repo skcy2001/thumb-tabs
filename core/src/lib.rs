@@ -82,6 +82,39 @@ fn string_id<'de, D: serde::Deserializer<'de>>(d: D) -> Result<String, D::Error>
     })
 }
 
+pub const THEMES: &[&str] = &["cocoa", "midnight", "graphite", "forest", "light"];
+pub const TAB_STYLES: &[&str] = &["binder", "classic", "pill", "chrome"];
+
+/// How the shell looks. Both fields name a style the UI defines; anything
+/// else (a newer build's choice, a hand-edited file) falls back to the default.
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Appearance {
+    pub theme: String,
+    pub tab_style: String,
+}
+
+impl Default for Appearance {
+    fn default() -> Self {
+        Self {
+            theme: THEMES[0].into(),
+            tab_style: TAB_STYLES[0].into(),
+        }
+    }
+}
+
+impl Appearance {
+    pub fn sanitize(&mut self) {
+        let default = Self::default();
+        if !THEMES.contains(&self.theme.as_str()) {
+            self.theme = default.theme;
+        }
+        if !TAB_STYLES.contains(&self.tab_style.as_str()) {
+            self.tab_style = default.tab_style;
+        }
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Settings {
@@ -94,6 +127,7 @@ pub struct Settings {
     pub collapsed: bool,
     pub monitor: Option<String>,
     pub imported_electron: bool,
+    pub appearance: Appearance,
 }
 
 impl Default for Settings {
@@ -107,6 +141,7 @@ impl Default for Settings {
             collapsed: true,
             monitor: None,
             imported_electron: false,
+            appearance: Appearance::default(),
         }
     }
 }
@@ -114,6 +149,7 @@ impl Default for Settings {
 impl Settings {
     pub fn sanitize(&mut self) {
         self.pane_width = clamp_width(self.pane_width);
+        self.appearance.sanitize();
         let mut ids = std::collections::HashSet::new();
         self.pins
             .retain(|p| !p.id.is_empty() && ids.insert(p.id.clone()) && is_web_url(&p.url));
@@ -457,6 +493,20 @@ mod tests {
         assert_eq!(settings.pins.len(), 1);
         assert_eq!(settings.pane_width, 364.0);
         assert_eq!(clamp_width(9999.0), 900.0);
+    }
+
+    #[test]
+    fn appearance_keeps_known_styles_and_defaults_the_rest() {
+        let mut settings = Settings::default();
+        settings.appearance.theme = "forest".into();
+        settings.appearance.tab_style = "sparkles".into();
+        settings.sanitize();
+        assert_eq!(settings.appearance.theme, "forest");
+        assert_eq!(settings.appearance.tab_style, "binder");
+
+        settings.appearance.theme = "neon".into();
+        settings.sanitize();
+        assert_eq!(settings.appearance, Appearance::default());
     }
 
     #[test]

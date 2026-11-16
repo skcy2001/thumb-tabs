@@ -393,6 +393,7 @@ fn context_menu(app: &AppHandle, action: &Value) -> Result<()> {
         item(json!({"type":"closeAll"}), "Close all tabs")?;
         item(json!({"type":"fullscreen"}), "Toggle fullscreen")?;
         item(json!({"type":"downloadsPanel"}), "Downloads")?;
+        item(json!({"type":"openSettings"}), "Settings…")?;
         item(json!({"type":"hide"}), "Hide to tray")?;
         item(json!({"type":"quit"}), "Quit")?;
     }
@@ -458,6 +459,7 @@ fn toolbar_menu(app: &AppHandle) -> Result<()> {
     menu.append(&PredefinedMenuItem::separator(app).map_err(err)?)
         .map_err(err)?;
     add(json!({"type":"toolbarCommand","command":"customize"}), "Customize toolbar…", true)?;
+    add(json!({"type":"toolbarCommand","command":"settings"}), "Settings…", true)?;
     shell::touch(app, Duration::from_secs(30));
     native::popup_menu(&pane, menu, point, s.settings.side)
 }
@@ -749,6 +751,20 @@ async fn apply(app: &AppHandle, a: Value) -> Result<()> {
         "toolbarCommand" => {
             let _ = app.emit_to("pane", "toolbar-command", string(&a, "command")?);
             return Ok(());
+        }
+        "openSettings" => {
+            edit(app, |b| b.state.collapsed = false);
+            shell::show(app)?;
+            let _ = app.emit_to("pane", "toolbar-command", "settings");
+        }
+        "setAppearance" => {
+            let mut appearance = model::Appearance {
+                theme: string(&a, "theme")?.into(),
+                tab_style: string(&a, "tabStyle")?.into(),
+            };
+            appearance.sanitize();
+            edit(app, |b| b.state.settings.appearance = appearance);
+            persist = true;
         }
         "resizeGuide" => return shell::resize_guide(app, a["width"].as_f64()),
         "notificationPermission" => {

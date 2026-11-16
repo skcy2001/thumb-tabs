@@ -1,0 +1,155 @@
+/* ---- Settings panel: reuses the toolbar customizer's frame (customizer.css) ---- */
+
+.settings-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-back {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: -6px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+
+.settings-back:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.settings-item:hover {
+  background: var(--bg-hover);
+}
+
+.settings-item .customizer-icon {
+  color: var(--accent);
+}
+
+.settings-chevron {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+
+.settings-panel button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Cards for choosing a theme or tab shape. */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 8px;
+  padding: 0 6px;
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-dark);
+  text-align: center;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.choice:hover {
+  background: var(--bg-hover);
+}
+
+.choice.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-dark));
+}
+
+.choice-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.choice-desc {
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--text-secondary);
+}
+
+/* A theme: its ribbon, toolbar and accent, in its own colours. */
+.theme-swatch {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 44px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-toolbar);
+  color-scheme: normal;
+}
+
+.theme-swatch-strip {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 26%;
+  background: var(--bg-strip);
+  border-right: 1px solid var(--border);
+}
+
+.theme-swatch-bar {
+  position: absolute;
+  top: 8px;
+  left: 36%;
+  right: 10px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.theme-swatch-dot {
+  position: absolute;
+  left: 7px;
+  top: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* A tab shape, on the ribbon colour of the chosen theme. */
+.tab-style-frame {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: 6px 0;
+  border-radius: 6px;
+  background: var(--bg-hover);
+}
+
+.tab-style-preview {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choice {
+    transition: none;
+  }
+}
