@@ -90,7 +90,11 @@ pub unsafe fn install(
     label: String,
     owner: HWND,
 ) -> windows::core::Result<()> {
-    install_toasts(app, core, &label)?;
+    // Toasts are an enhancement: if they cannot be set up, WebView2 keeps
+    // drawing its own pop-up, so this must not fail the page's integration.
+    if let Err(error) = install_toasts(app, core, &label) {
+        eprintln!("Windows notification setup: {error}");
+    }
     let app = app.clone();
     let owner = owner.0 as isize;
     let mut token = 0;
@@ -219,9 +223,11 @@ fn app_id(app: &AppHandle) -> String {
 
 /// Gives the process an app identity and registers it as a notification
 /// sender (name and icon) for the current user. Unpackaged apps do this with
-/// an AppUserModelId registry entry; no shortcut is needed.
-pub fn register_sender(app: &AppHandle) {
+/// an AppUserModelId registry entry; no shortcut is needed. Returns whether
+/// the entry is in place: without it Windows silently drops our toasts.
+pub fn register_sender(app: &AppHandle) -> bool {
     use windows::Win32::{
+        Foundation::ERROR_SUCCESS,
         System::Registry::{RegSetKeyValueW, HKEY_CURRENT_USER, REG_SZ},
         UI::Shell::SetCurrentProcessExplicitAppUserModelID,
     };
@@ -232,8 +238,10 @@ pub fn register_sender(app: &AppHandle) {
         .ok()
         .map(|d| d.join("notification-icon.png"))
         .and_then(|path| {
-            std::fs::create_dir_all(path.parent()?).ok()?;
-            std::fs::write(&path, include_bytes!("../icons/icon.png")).ok()?;
+            if !path.exists() {
+                std::fs::create_dir_all(path.parent()?).ok()?;
+                std::fs::write(&path, include_bytes!("../icons/icon.png")).ok()?;
+            }
             Some(path)
         });
     unsafe {
@@ -242,24 +250,32 @@ pub fn register_sender(app: &AppHandle) {
         let set = |name: &str, value: &str| {
             let name = HSTRING::from(name);
             let wide: Vec<u16> = value.encode_utf16().chain(std::iter::once(0)).collect();
-            let _ = RegSetKeyValueW(
+            RegSetKeyValueW(
                 HKEY_CURRENT_USER,
                 &key,
                 &name,
                 REG_SZ.0,
                 Some(wide.as_ptr() as _),
                 (wide.len() * 2) as u32,
-            );
+            ) == ERROR_SUCCESS
         };
-        set("DisplayName", "Tabbar");
+        let named = set("DisplayName", "Tabbar");
         if let Some(icon) = icon {
             set("IconUri", &icon.to_string_lossy());
         }
+        if !named {
+            eprintln!("Windows notification: could not register the sender");
+        }
+        named
     }
 }
 
 fn xml_text(value: &str) -> String {
+    // XML 1.0 rejects most control characters, and sites can put anything in a title.
     value
+        .chars()
+        .filter(|c| !c.is_control() || matches!(c, '\t' | '\n' | '\r'))
+        .collect::<String>()
         .replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")
@@ -360,14 +376,20 @@ unsafe fn install_toasts(app: &AppHandle, core: &ICoreWebView2, label: &str) -> 
     core.add_NotificationReceived(
         &NotificationReceivedEventHandler::create(Box::new(move |_, args| {
             let Some(args) = args else { return Ok(()) };
+            // Re-register on every notification: if the entry has gone, Windows
+            // would drop the toast, so let WebView2's own pop-up show instead.
+            if !register_sender(&app) {
+                return Ok(());
+            }
             let origin = uri(|p| args.SenderOrigin(p)).unwrap_or_default();
             let notification = args.Notification()?;
             // Only take over once the toast is actually up; otherwise WebView2
-            // still shows its own pop-up and nothing is lost.
+            // still shows its own pop-up and nothing is lost, so there is
+            // nothing to report to the user.
             match show_toast(&app, tab, &origin, notification) {
                 Ok(()) => args.SetHandled(true),
                 Err(error) => {
-                    report(&app, format!("Windows notification: {error}"));
+                    eprintln!("Windows notification: {error}");
                     Ok(())
                 }
             }
