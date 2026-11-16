@@ -1,0 +1,386 @@
+/*
+ * Binder tab style — html[data-tab-style="binder"].
+ *
+ * The ribbon reads as the protruding edge of a ring binder: every tab is a
+ * coloured paper divider, one shape that curves out of the page edge, with
+ * slanted top and bottom and rounded outer corners. The dividers overlap.
+ * Unselected ones draw a thin line where they tuck behind the page; the
+ * selected one is a deeper shade, has no line (it flows into the page), and
+ * sits in front. The pane's toolbar picks up the same colour, like the top of
+ * that divider page.
+ *
+ * "Inner" below means the edge facing the pane; "outer" faces the screen edge.
+ */
+
+[data-divider='0'] { --divider: #e8a3f3; } /* logo pink */
+[data-divider='1'] { --divider: #f4c4a0; } /* peach */
+[data-divider='2'] { --divider: #eedb9c; } /* butter */
+[data-divider='3'] { --divider: #bcd7ad; } /* sage */
+[data-divider='4'] { --divider: #aecbe6; } /* sky */
+[data-divider='5'] { --divider: #cbb7e6; } /* lavender */
+
+html[data-tab-style='binder'] {
+  --binder-tab-h: 88px;
+  --binder-slant: 10px; /* how much the top and bottom edges slope */
+  --binder-round: 8px;  /* rounding at the outer corners */
+  --binder-overlap: 10.8px; /* how far each tab tucks over the one above */
+  --binder-flare: 12px; /* radius of the curves where a tab meets the page */
+  --binder-reach: 6px;  /* gap left at the outer edge */
+  --binder-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* The divider outline, shared by the tabs and the add-tab button. Inner
+     (page) edge on the left for a right dock; mirrored for a left dock. */
+  --binder-shape-right: shape(
+    from 0 0,
+    curve to var(--binder-flare) var(--binder-flare) with 0 calc(var(--binder-flare) * 0.7),
+    line to calc(100% - var(--binder-round)) calc(var(--binder-flare) + var(--binder-slant) - var(--binder-round) * 0.3),
+    curve to 100% calc(var(--binder-flare) + var(--binder-slant) + var(--binder-round)) with 100% calc(var(--binder-flare) + var(--binder-slant)),
+    line to 100% calc(100% - var(--binder-flare) - var(--binder-slant) - var(--binder-round)),
+    curve to calc(100% - var(--binder-round)) calc(100% - var(--binder-flare) - var(--binder-slant) + var(--binder-round) * 0.3) with 100% calc(100% - var(--binder-flare) - var(--binder-slant)),
+    line to var(--binder-flare) calc(100% - var(--binder-flare)),
+    curve to 0 100% with 0 calc(100% - var(--binder-flare) * 0.7),
+    close
+  );
+  --binder-shape-left: shape(
+    from 100% 0,
+    curve to calc(100% - var(--binder-flare)) var(--binder-flare) with 100% calc(var(--binder-flare) * 0.7),
+    line to var(--binder-round) calc(var(--binder-flare) + var(--binder-slant) - var(--binder-round) * 0.3),
+    curve to 0 calc(var(--binder-flare) + var(--binder-slant) + var(--binder-round)) with 0 calc(var(--binder-flare) + var(--binder-slant)),
+    line to 0 calc(100% - var(--binder-flare) - var(--binder-slant) - var(--binder-round)),
+    curve to var(--binder-round) calc(100% - var(--binder-flare) - var(--binder-slant) + var(--binder-round) * 0.3) with 0 calc(100% - var(--binder-flare) - var(--binder-slant)),
+    line to calc(100% - var(--binder-flare)) calc(100% - var(--binder-flare)),
+    curve to 100% 100% with 100% calc(100% - var(--binder-flare) * 0.7),
+    close
+  );
+}
+
+/* ---- Ribbon backdrop: binder board, page edge drawn as a 1px line ---- */
+
+html[data-tab-style='binder'] .tab-strip {
+  border: 0 !important;
+  background:
+    linear-gradient(var(--binder-page-edge-dir, to right), var(--binder-page-edge, transparent) 1px, transparent 1px),
+    linear-gradient(var(--binder-page-edge-dir, to right), rgba(0, 0, 0, 0.22), transparent 18px),
+    var(--bg-strip);
+}
+
+html[data-tab-style='binder'] [data-side='left'] .tab-strip {
+  --binder-page-edge-dir: to left;
+}
+
+html[data-tab-style='binder'] .expanded .tab-strip {
+  --binder-page-edge: var(--border);
+}
+
+html[data-tab-style='binder'] .tab-list {
+  gap: 3px;
+  padding: 2px 0 8px;
+}
+
+html[data-tab-style='binder'] .pinned-site-list {
+  gap: 3px;
+  margin: 0 0 6px;
+  padding: 0 0 6px;
+}
+
+/* ---- Divider tabs: each one a single shape ---- */
+
+/* Every tab is one silhouette: one clip-path over one background.
+   - Its page edge runs straight down the inner side.
+   - Curves sweep out of the page edge into the slanted top and bottom.
+   - The outer corners are rounded.
+   Each curve leaves and joins the slanted edge along the same direction (a
+   slope of about 0.3, the slant across a typical tab's width), so the outline
+   has no kinks. The box is --binder-flare taller at top and bottom than the
+   visible body, to hold those curves. All shading (the page-edge line and
+   shadow, the outer stripe) is painted as background layers inside the shape,
+   so it follows the silhouette. Tabs overlap; later ones paint over earlier
+   ones, and the selected tab sits in front. */
+html[data-tab-style='binder'] [data-side] .tab-item,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn {
+  --tab-bg: color-mix(in srgb, var(--divider, var(--accent)) 28%, var(--bg-strip));
+  --tab-edge: color-mix(in srgb, var(--divider, var(--accent)) 75%, var(--bg-strip));
+  --page-line: var(--border);         /* tucked behind the page */
+  --page-shadow: rgba(0, 0, 0, 0.4);
+  --edge-dir: to right;               /* from the page edge outward */
+  --outer-gap: var(--binder-reach);
+  height: calc(var(--binder-tab-h) + 2 * var(--binder-flare));
+  min-height: 0;
+  flex-shrink: 0; /* scroll the strip rather than squash tabs when it is full */
+  /* Logo 16px below the body's top and 3px toward the page; the bottom
+     padding keeps the grip clear of the next tab, which covers this tab's
+     lowest --binder-overlap pixels. */
+  padding: calc(16px + var(--binder-flare)) 9px calc(var(--binder-overlap) + 4px + var(--binder-flare)) 3px;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 5px;
+  margin: 0 var(--outer-gap) 0 0;
+  border-radius: 0 11px 11px 0;
+  box-shadow: none;
+  background:
+    linear-gradient(var(--edge-dir), var(--page-line) 1px, transparent 1px),
+    linear-gradient(var(--edge-dir), var(--page-shadow), transparent 5px),
+    /* Outer stripe, with a 2px fade into the tab. */
+    linear-gradient(var(--edge-dir), transparent calc(100% - 5px), var(--tab-edge) calc(100% - 3px)),
+    var(--tab-bg);
+  transition: margin 180ms var(--binder-ease);
+}
+
+html[data-tab-style='binder'] [data-side='left'] .tab-item,
+html[data-tab-style='binder'] [data-side='left'] .pinned-site-btn {
+  --edge-dir: to left;
+  margin: 0 0 0 var(--outer-gap);
+  padding: calc(16px + var(--binder-flare)) 3px calc(var(--binder-overlap) + 4px + var(--binder-flare)) 9px;
+  border-radius: 11px 0 0 11px;
+}
+
+/* The outline itself (--binder-shape-*, defined at the top) is shared with
+   the add-tab button. Without shape() support the tabs keep plain rounded
+   corners. */
+@supports (clip-path: shape(from 0 0, line to 1px 0, curve to 1px 1px with 1px 0, close)) {
+  html[data-tab-style='binder'] [data-side] .tab-item,
+  html[data-tab-style='binder'] [data-side] .pinned-site-btn,
+  html[data-tab-style='binder'] [data-side] .tab-new-btn {
+    border-radius: 0;
+    clip-path: var(--binder-shape-right);
+  }
+
+  html[data-tab-style='binder'] [data-side='left'] .tab-item,
+  html[data-tab-style='binder'] [data-side='left'] .pinned-site-btn,
+  html[data-tab-style='binder'] [data-side='left'] .tab-new-btn {
+    clip-path: var(--binder-shape-left);
+  }
+}
+
+/* Overlap: each tab's body tucks --binder-overlap over the one above (the
+   boxes overlap a further 2 x --binder-flare, the room for the curves). */
+html[data-tab-style='binder'] [data-side] .tab-item + .tab-item,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn + .pinned-site-btn {
+  margin-top: calc(-1 * (var(--binder-overlap) + 2 * var(--binder-flare)));
+}
+
+/* The classic style draws an accent bar with ::before; the shape replaces it. */
+html[data-tab-style='binder'] [data-side] .tab-item.tab-item::before,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn.pinned-site-btn::before,
+html[data-tab-style='binder'] [data-side] .tab-item.tab-item::after,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn.pinned-site-btn::after {
+  content: none;
+}
+
+html[data-tab-style='binder'] [data-side] .pinned-site-btn:not(.open) {
+  --tab-edge: transparent;
+}
+
+html[data-tab-style='binder'] [data-side] .tab-item .tab-icon,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn .tab-icon {
+  opacity: 0.78;
+  transition: opacity 160ms ease;
+}
+
+/* Hover: the divider slides out a little, as if thumbed. */
+html[data-tab-style='binder'] [data-side] .tab-item:hover,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn:hover {
+  --tab-bg: color-mix(in srgb, var(--divider, var(--accent)) 40%, var(--bg-strip));
+  --outer-gap: 3px;
+}
+
+html[data-tab-style='binder'] [data-side] .tab-item:hover .tab-icon,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn:hover .tab-icon {
+  opacity: 1;
+}
+
+/* ---- The selected divider: the open page ---- */
+
+/* Same shape, a deeper shade of the logo's colour, no page-edge line (it
+   flows into the page), sticks out a little further, and sits in front of
+   both neighbours. */
+html[data-tab-style='binder'] [data-side] .tab-item.active,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn.active {
+  --tab-bg: color-mix(in srgb, var(--divider, var(--accent)) 50%, var(--bg-dark));
+  --page-line: transparent;
+  --page-shadow: transparent;
+  --outer-gap: 2px;
+  z-index: 1;
+}
+
+html[data-tab-style='binder'] [data-side] .tab-item.active .tab-icon,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn.active .tab-icon {
+  opacity: 1;
+}
+
+/* ---- Hover grip: the space under the logo shows the drag dots ---- */
+
+html[data-tab-style='binder'] .tab-grip {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  /* The same colour as the outer-edge stripe on open dividers. Uses the
+     stripe's formula rather than --tab-edge, which is transparent on pinned
+     sites that are not open. */
+  color: color-mix(in srgb, var(--divider, var(--accent)) 75%, var(--bg-strip));
+  opacity: 0;
+  /* Hit-testable so the pointer turns into a grab hand over the dots; the
+     press still lands on the tab, which starts the reorder drag. */
+  cursor: grab;
+  transition: opacity 160ms ease;
+}
+
+html[data-tab-style='binder'] .tab-grip:active {
+  cursor: grabbing;
+}
+
+/* While a tab is being dragged, other tabs keep their grips hidden and the
+   pointer stays a closed hand wherever it passes. */
+html[data-tab-style='binder'] .tab-strip.reordering,
+html[data-tab-style='binder'] .tab-strip.reordering * {
+  cursor: grabbing !important;
+}
+
+html[data-tab-style='binder'] [data-side] .tab-strip.reordering .tab-grip.tab-grip {
+  opacity: 0;
+  transition: none;
+}
+
+html[data-tab-style='binder'] .tab-grip .ribbon-drag-grip-icon,
+html[data-tab-style='binder'] .ribbon-drag-handle .ribbon-drag-grip-icon {
+  width: 24px;
+  height: 24px;
+}
+
+html[data-tab-style='binder'] [data-side] .tab-item:hover .tab-grip,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn:hover .tab-grip {
+  opacity: 1;
+}
+
+/* ---- Badges ring against the divider they sit on ---- */
+
+html[data-tab-style='binder'] [data-side] .tab-item .tab-unread-dot,
+html[data-tab-style='binder'] [data-side] .tab-item .tab-unread-count,
+html[data-tab-style='binder'] [data-side] .tab-item .tab-audio-badge,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn .tab-unread-dot,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn .tab-unread-count,
+html[data-tab-style='binder'] [data-side] .pinned-site-btn .tab-audio-badge {
+  box-shadow: 0 0 0 2px var(--tab-bg);
+}
+
+html[data-tab-style='binder'] .tab-favicon-letter {
+  background: var(--bg-dark);
+  color: var(--accent);
+}
+
+/* ---- New tab: a blank divider, the same shape as the tabs ---- */
+
+/* Same outline and size as a tab, with a faint fill and the "+" where a logo
+   sits. Hover slides it out and brightens it, like a tab. */
+html[data-tab-style='binder'] [data-side] .tab-new-btn {
+  --tab-bg: color-mix(in srgb, var(--accent) 12%, var(--bg-strip));
+  --edge-dir: to right;
+  width: auto;
+  /* Shorter than a tab: 55% of a tab's body. */
+  height: calc(var(--binder-tab-h) * 0.55 + 2 * var(--binder-flare));
+  flex-shrink: 0;
+  margin: 4px var(--binder-reach) 2px 0;
+  padding: var(--binder-flare) 9px var(--binder-flare) 3px;
+  flex-direction: column;
+  justify-content: center;
+  border: 0;
+  border-radius: 0 11px 11px 0;
+  background:
+    linear-gradient(var(--edge-dir), var(--border) 1px, transparent 1px),
+    linear-gradient(var(--edge-dir), rgba(0, 0, 0, 0.4), transparent 5px),
+    var(--tab-bg);
+  color: var(--accent);
+  transform: none;
+  transition: margin 180ms var(--binder-ease);
+}
+
+html[data-tab-style='binder'] [data-side='left'] .tab-new-btn {
+  --edge-dir: to left;
+  margin: 4px 0 2px var(--binder-reach);
+  padding: var(--binder-flare) 3px var(--binder-flare) 9px;
+  border-radius: 11px 0 0 11px;
+}
+
+html[data-tab-style='binder'] [data-side] .tab-new-btn:hover {
+  --tab-bg: color-mix(in srgb, var(--accent) 22%, var(--bg-strip));
+  margin-right: 3px;
+  color: var(--accent-hover);
+  transform: none;
+}
+
+html[data-tab-style='binder'] [data-side='left'] .tab-new-btn:hover {
+  margin-right: 0;
+  margin-left: 3px;
+}
+
+html[data-tab-style='binder'] [data-side] .tab-new-btn svg {
+  flex-shrink: 0;
+  width: 18.7px; /* 15% smaller than 22px */
+  height: 18.7px;
+}
+
+/* ---- Section break between pinned and open dividers ---- */
+
+html[data-tab-style='binder'] .tab-strip-pinned-divider {
+  margin: 0 var(--binder-reach) 9px 0px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ---- Pane: the selected divider page ---- */
+
+/* The toolbar is tinted with the divider colour, and a bar of that colour runs
+   down the page edge facing the ribbon. The native page view is inset by the
+   bar's width on that side (PAGE_EDGE in tauri/src-tauri/src/shell.rs). */
+html[data-tab-style='binder'] .pane-shell .toolbar {
+  background: color-mix(in srgb, var(--divider, var(--accent)) 12%, var(--bg-toolbar));
+  transition: background-color 200ms ease;
+}
+
+html[data-tab-style='binder'] .pane-shell::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 3px;
+  background: var(--divider, var(--accent));
+  pointer-events: none;
+  z-index: 5;
+  transition: background-color 200ms ease;
+}
+
+html[data-tab-style='binder'] .pane-shell[data-side='left']::after {
+  right: auto;
+  left: 0;
+}
+
+html[data-tab-style='binder'][data-fullscreen='true'] .pane-shell::after {
+  display: none;
+}
+
+/* In fullscreen the page sits under the ribbon, so the ribbon window is
+   3px wider (PAGE_EDGE) and paints the page-edge bar on its page side. */
+html[data-tab-style='binder'][data-fullscreen='true'] .ribbon-shell {
+  background: var(--divider, var(--accent));
+}
+
+html[data-tab-style='binder'][data-fullscreen='true'] .ribbon-shell[data-side='right'] {
+  padding-left: 3px;
+}
+
+html[data-tab-style='binder'][data-fullscreen='true'] .ribbon-shell[data-side='left'] {
+  padding-right: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-tab-style='binder'] [data-side] .tab-item,
+  html[data-tab-style='binder'] [data-side] .pinned-site-btn,
+  html[data-tab-style='binder'] [data-side] .tab-item .tab-icon,
+  html[data-tab-style='binder'] [data-side] .pinned-site-btn .tab-icon,
+  html[data-tab-style='binder'] [data-side] .tab-new-btn,
+  html[data-tab-style='binder'] .pane-shell .toolbar,
+  html[data-tab-style='binder'] .pane-shell::after {
+    transition: none;
+  }
+}

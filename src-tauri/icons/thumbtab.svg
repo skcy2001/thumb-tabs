@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="35 29.5 345 345" width="1024" height="1024">
+  <!-- Thumbtab logo: traced from the reference sketch (tile 345x334, corner radius 43). -->
+  <defs><clipPath id="tile"><rect x="35" y="35" width="345" height="334" rx="43"/></clipPath></defs>
+  <g clip-path="url(#tile)">
+    <rect x="35" y="35" width="345" height="334" fill="#543e3a"/>
+    <path fill="#e8a3f3" d="M84 98 H131 A5 5 0 0 0 136 93 H140 V172 H136 A5 5 0 0 0 131 167 H84 Q73 167 73 156 V109 Q73 98 84 98 Z"/>
+    <rect x="136" y="35" width="70" height="334" fill="#e8a3f3"/>
+  </g>
+</svg>

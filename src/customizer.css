@@ -1,0 +1,260 @@
+/* ---- Toolbar customizer: full-pane panel opened by right-clicking the toolbar ---- */
+
+.toolbar-customizer {
+  position: fixed;
+  top: var(--toolbar-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-toolbar);
+  border-top: 1px solid var(--border);
+  -webkit-app-region: no-drag;
+  user-select: none;
+}
+
+.customizer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 8px;
+}
+
+.customizer-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.customizer-done {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1a1210;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.customizer-done:hover {
+  background: var(--accent-hover);
+}
+
+.customizer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px 8px;
+}
+
+.customizer-group h3 {
+  margin: 10px 6px 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.customizer-hint {
+  margin: 2px 6px 6px;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--text-secondary) 75%, transparent);
+}
+
+.customizer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 8px;
+}
+
+.customizer-row:hover {
+  background: var(--bg-hover);
+}
+
+.customizer-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+}
+
+.customizer-row.on .customizer-icon {
+  color: var(--accent);
+}
+
+.customizer-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.customizer-name {
+  font-size: 12.5px;
+  color: var(--text-primary);
+}
+
+.customizer-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A small on/off switch drawn on the checkbox itself. */
+.customizer-switch {
+  appearance: none;
+  flex: 0 0 auto;
+  position: relative;
+  width: 30px;
+  height: 18px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--border);
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.customizer-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition: transform 140ms ease, background-color 140ms ease;
+}
+
+.customizer-switch:checked {
+  background: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.customizer-switch:checked::after {
+  transform: translateX(12px);
+  background: var(--accent);
+}
+
+.customizer-switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.customizer-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 14px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.customizer-reset {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.customizer-reset:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Three-stop slider for buttons with a "when needed" setting:
+   left Hidden, middle When needed, right Always. */
+.customizer-slider {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 18px;
+  margin: 0;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--border);
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.customizer-slider::-webkit-slider-runnable-track {
+  height: 18px;
+  background: transparent;
+}
+
+.customizer-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: 3px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition: background-color 140ms ease;
+}
+
+.mode-auto .customizer-slider {
+  background: color-mix(in srgb, var(--accent) 22%, var(--border));
+}
+
+.mode-auto .customizer-slider::-webkit-slider-thumb {
+  background: color-mix(in srgb, var(--accent) 60%, var(--text-secondary));
+}
+
+.mode-on .customizer-slider {
+  background: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.mode-on .customizer-slider::-webkit-slider-thumb {
+  background: var(--accent);
+}
+
+.customizer-slider:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The setting in words, beside the control, when the panel has room. */
+.customizer-body {
+  container-type: inline-size;
+}
+
+.customizer-state {
+  flex: 0 0 76px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.mode-on .customizer-state {
+  color: var(--accent);
+}
+
+.mode-auto .customizer-state {
+  color: color-mix(in srgb, var(--accent) 60%, var(--text-secondary));
+}
+
+@container (max-width: 340px) {
+  .customizer-state {
+    display: none;
+  }
+}
+
+/* Rows are no longer labels; the icon colour follows any shown state. */
+.customizer-row.mode-on .customizer-icon,
+.customizer-row.mode-auto .customizer-icon {
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customizer-switch,
+  .customizer-switch::after,
+  .customizer-slider,
+  .customizer-slider::-webkit-slider-thumb {
+    transition: none;
+  }
+}
