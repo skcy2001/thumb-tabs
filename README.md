@@ -2,15 +2,13 @@
 
 A docked browser ribbon for Windows with pinned sites, persistent logins, media
 controls, and quick access from the screen edge. Built with Rust, Tauri 2, and
-the system WebView2 runtime. This is the Tauri edition of Tabbar (formerly
-Sidebar), split out of the original repository. The React interface lives in
-`src/` and the bridge contract in `shared/`. Electron and Node are not shipped
-with the application.
+the system WebView2 runtime, with a React interface. Nothing from Electron or
+Node ships with the app. Formerly part of Tabbar (originally Sidebar).
 
 ## Features
 
-- Original ribbon, pinned sites, drag reordering, drag across the divider to
-  pin/unpin, unread badges, favicons, and URL/search toolbar.
+- Ribbon with pinned sites, drag reordering, drag across the divider to
+  pin/unpin, unread badges, favicons, and a URL/search toolbar.
   Open pins have a small neutral dot below the icon; the selected pin also has
   a pink edge marker. Unread and media badges remain separate.
 - Separate ribbon and content windows, 220–900px draggable pane width, remembered
@@ -45,16 +43,17 @@ with the application.
   with automatic vertical adjustment near the screen boundary.
 - Tray controls, open in the default browser, single-instance handoff, and
   `tabbar://` links that select a matching pinned host when possible.
-- Automatic import of Electron pins, site options, and dock settings.
+- Automatic import of pins, site options, and dock settings from the older
+  Electron edition of Tabbar.
 
-Custom keyboard shortcuts are intentionally excluded from this migration.
-Standard website and text-input behavior remains available. Open ordinary tabs
-and download history are session-only, as in the original app.
+Custom keyboard shortcuts are not included. Standard website and text-input
+behavior remains available. Open ordinary tabs and download history are
+session-only.
 
 ## Website notifications
 
 Enable desktop notifications in the website's own settings. When it requests
-permission, Tabbar asks whether to allow notifications from the displayed origin:
+permission, the app asks whether to allow notifications from the displayed origin:
 **Yes** allows them, **No** blocks them, and **Cancel** leaves the choice unset.
 Allow and block choices survive app restarts and are separate for isolated
 profiles. Other website permissions keep their existing behavior.
@@ -84,13 +83,23 @@ npm run bundle        # Release executable and NSIS installer
 ```
 
 The release executable is `src-tauri/target/release/tabbar.exe`; an
-explicit `--target` adds the target triple before `release`. The manually
-triggered GitHub workflow builds unsigned Windows x64 and ARM64 installers.
-The installer obtains WebView2 if needed instead of bundling Chromium.
+explicit `--target` adds the target triple before `release`. `npm run bundle`
+builds an unsigned NSIS installer for the current architecture; pass
+`-- --target aarch64-pc-windows-msvc` (or `x86_64-pc-windows-msvc`) to build for
+the other one. The installer obtains WebView2 if needed instead of bundling Chromium.
 
 This native integration currently targets Windows. macOS and Linux need their
 own platform implementations. The multi-webview API is still marked unstable
 by Tauri, so the Rust Tauri version and dependency lockfiles are pinned.
+
+## Project layout
+
+- `src/`: React interface, with `bridge.ts` implementing the native API over Tauri
+- `shared/`: types and the API contract between the interface and the native side
+- `src-tauri/`: the Tauri app (windows, docking, WebView2, notifications)
+- `core/`: platform-free Rust logic (settings, URLs, unread parsing, slide maths)
+- `tests/`: Playwright UI tests with a mocked native bridge
+- `scripts/`: notification integration test and Electron session import helper
 
 ## Existing data
 
@@ -98,11 +107,11 @@ Settings live in `%APPDATA%/com.samya.sidebar.tauri/settings.json`. Browser data
 lives in `%LOCALAPPDATA%/com.samya.sidebar.tauri`. On first start, the app merges
 pins from `%APPDATA%/sidebar/pinned-sites.json` and imports the shell placement.
 These legacy identifiers and partition names are intentionally retained across
-the Tabbar rename to preserve settings, logins, and installer upgrade identity.
-Electron's files remain intact.
+the renames to preserve settings, logins, and installer upgrade identity.
+The Electron edition's files remain intact.
 
 To transfer existing cookies from an Electron Tabbar installation, close
-Electron Tabbar, then run this from a checkout of the original repository
+Electron Tabbar, then run this from a checkout of the old Tabbar repository
 (it needs that repository's `node_modules/electron`), pointing at this script:
 
 ```powershell
@@ -111,7 +120,7 @@ Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
 ```
 
 The helper reads cookies through Electron's own session API and stages Windows
-DPAPI-encrypted transfer files. Tauri consumes each profile's transfer when that
+DPAPI-encrypted transfer files. The app consumes each profile's transfer when that
 profile is first opened, deletes the encrypted transfer, and writes only counts
 to a migration report. Cookie values are not logged. IndexedDB, local storage,
 and service workers do not transfer between engines; some sites may require a
@@ -120,8 +129,8 @@ login session. Newly pinned tabs retain their existing shared login until
 isolation is selected explicitly.
 
 `tabbar://` and the legacy `sidebar://` alias are registered for the current
-Windows user at startup. Launching an
-HTTP(S) URL as a command-line argument also works.
+Windows user at startup. Launching the app with an HTTP(S) URL as a command-line
+argument also works.
 
 ## Security and size
 
@@ -130,13 +139,14 @@ popup webviews cannot call the shell commands, and browsing-state events are
 sent only to the trusted interface. Website navigation is restricted to HTTP(S).
 Profiles are derived from encoded partition names under the app's data folder.
 
-Distribution size is much smaller because WebView2 is supplied by Windows.
-This does not establish a RAM reduction: measure the complete app and WebView2
-process tree with identical websites and profiles. Isolated profiles require
-additional browser environments. The earlier 3.3MB measurement described the
-incomplete prototype and should not be used for this restored build.
+Distribution size is much smaller than an Electron app because WebView2 is
+supplied by Windows. This does not establish a RAM reduction: measure the
+complete app and WebView2 process tree with identical websites and profiles.
+Isolated profiles require additional browser environments.
 
-The test suite covers navigation/search safety, state selection, reordering,
+## Testing
+
+The UI test suite covers navigation/search safety, state selection, reordering,
 unread parsing, deep-link routing, imported-pin UI, downloads controls, media
 controls, fullscreen controls, and error handling. UI tests mock native IPC;
 real Windows/WebView2 behavior also needs native integration checks.
@@ -152,3 +162,7 @@ auto-hide, and edge-hover reveal. That executable was 3,426,816 bytes.
 Edge animations also passed movement traces on both sides, collapsed and
 expanded, with no backward jumps, gaps between the windows, or movement after
 settling at the edge.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
