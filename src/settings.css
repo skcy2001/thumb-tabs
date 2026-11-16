@@ -86,7 +86,15 @@
   color: var(--text-primary);
 }
 
-.choice-grid-narrow {
+/* The Binder shapes, nested under the Binder card of Tab shape. */
+.choice-submenu {
+  margin: 10px 6px 0 18px;
+  padding-left: 10px;
+  border-left: 2px solid var(--border);
+}
+
+.choice-submenu .choice-grid {
+  padding: 0;
   grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
 }
 
@@ -179,6 +187,7 @@
 .tab-style-frame {
   display: grid;
   place-items: center;
+  flex: 1;
   width: 100%;
   padding: 6px 0;
   border-radius: 6px;

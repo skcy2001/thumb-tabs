@@ -26,6 +26,9 @@ export interface SidebarApi {
     hidePlayer: () => void
     /** Brings up the pane with its Settings panel open. */
     openSettings: () => void
+    /** The pane reports whether its Settings panel is open, for the ribbon's button. */
+    setSettingsOpen?: (open: boolean) => void
+    onSettingsOpen?: (cb: (open: boolean) => void) => () => void
     keepPlayerOpen: () => void
     /** The player has drawn this tab's title and artwork and can be shown. */
     playerReady?: (tabId: number) => void

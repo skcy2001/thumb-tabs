@@ -39,6 +39,7 @@ export function Toolbar({
   useEffect(() => window.sidebarApi?.tabs.onToolbarCommand?.(command => {
     if (command === 'customize') setPanel('customize')
     if (command === 'settings') setPanel('settings')
+    if (command === 'closePanel') setPanel(null)
     if (command === 'copyLink' && urlRef.current) {
       void navigator.clipboard?.writeText(urlRef.current).catch(() => {})
     }
@@ -62,6 +63,14 @@ export function Toolbar({
     }
   }, [panelOpen])
 
+  // Tells the ribbon, whose Settings button acts like a tab, when it is open.
+  const settingsOpen = panel === 'settings'
+  const settingsReported = useRef(false)
+  useEffect(() => {
+    if (settingsReported.current === settingsOpen) return
+    settingsReported.current = settingsOpen
+    window.sidebarApi?.shell.setSettingsOpen?.(settingsOpen)
+  }, [settingsOpen])
   useEffect(() => {
     const tabs = window.sidebarApi?.tabs
     tabs?.getKeepOpen?.().then(setKeepOpen)

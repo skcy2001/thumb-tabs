@@ -190,6 +190,10 @@ export function TabStrip({
   }
   useEffect(() => cancelPlayerHover, [])
 
+  // Settings acts like a tab: while it is open the open tab is not highlighted.
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  useEffect(() => window.sidebarApi?.shell.onSettingsOpen?.(setSettingsOpen), [])
+  const showActive = !collapsed && !settingsOpen
   const handleContextMenu = (e: React.MouseEvent, tabId: number) => {
     e.preventDefault()
     window.sidebarApi?.tabs.showContextMenu(tabId, e.clientX, e.clientY)
@@ -446,7 +450,7 @@ export function TabStrip({
               parts.push(
                 <button
                   key={`pinned-${site.id}`}
-                  className={`pinned-site-btn ${site.id === activePinnedSiteId && !collapsed ? 'active' : ''} ${openTabId != null ? 'open' : ''}`}
+                  className={`pinned-site-btn ${site.id === activePinnedSiteId && showActive ? 'active' : ''} ${openTabId != null ? 'open' : ''}`}
                   data-site-id={site.id}
                   data-divider={siteIndex % DIVIDER_COLORS}
                   style={dividerStyle(faviconColor(site.faviconDataUrl))}
@@ -523,7 +527,7 @@ export function TabStrip({
               data-tab-id={tab.id}
               data-divider={(pinnedSites.length + tabIndex) % DIVIDER_COLORS}
               style={dividerStyle(faviconColor(tab.faviconDataUrl))}
-              className={`tab-item ${tab.isActive && !collapsed ? 'active' : ''}`}
+              className={`tab-item ${tab.isActive && showActive ? 'active' : ''}`}
               onClick={() => {
                 if (recentReorder.current) return
                 onActivate(tab.id)
@@ -555,9 +559,10 @@ export function TabStrip({
 
       <button
         type="button"
-        className="ribbon-settings-btn"
+        className={`ribbon-settings-btn ${settingsOpen ? 'active' : ''}`}
         title="Settings"
         aria-label="Settings"
+        aria-pressed={settingsOpen}
         onClick={() => window.sidebarApi?.shell.openSettings()}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -595,6 +595,11 @@ html[data-role='player'] body { background: var(--preview-bg); color: var(--prev
   color: var(--accent);
 }
 
+.ribbon-settings-btn.active {
+  background: var(--bg-active);
+  color: var(--accent);
+}
+
 .ribbon-settings-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;

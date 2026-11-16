@@ -1,28 +1,14 @@
 /*
- * Tab shapes besides the binder (binder.css) and the plain accent-bar strip
- * (App.css, used by "classic"). Chosen in Settings > Appearance through
- * html[data-tab-style="…"].
+ * Chrome tab shape — html[data-tab-style="chrome"].
+ *
+ * The same ribbon as the plain classic strip (App.css) with the same sizes and
+ * positions; only the highlights differ. The open tab is a rounded block
+ * instead of an accent bar, and the add-tab button is a rounded square. There
+ * is no placement handle; dock the ribbon to the other side from the
+ * right-click menu instead. The binder style is in binder.css.
  */
 
-/* ---- Chrome: browser-style tabs with no drag handle ----
- *
- * The strip is the darker frame and the open tab is the lighter surface it
- * shares with the toolbar. That tab sits flush against the page edge and
- * curls into it above and below (the ::before / ::after flares), the way a
- * Chrome tab joins its toolbar. There is no placement handle and no grip;
- * dock the ribbon to the other side from the right-click menu instead.
- *
- * "Inner" is the edge facing the pane: the left for a right dock.
- */
-
-html[data-tab-style='chrome'] {
-  --chrome-flare: 8px;
-  --chrome-gap: 10px;
-}
-
-html[data-tab-style='chrome'] .ribbon-drag-handle,
-html[data-tab-style='chrome'] .ribbon-drag-handle,
-html[data-tab-style='chrome'] .tab-grip {
+html[data-tab-style='chrome'] .ribbon-drag-handle {
   display: none;
 }
 
@@ -31,108 +17,33 @@ html[data-tab-style='chrome'] .ribbon-settings-btn {
   margin-bottom: 8px;
 }
 
-html[data-tab-style='chrome'] .app-layout[data-side] .tab-strip {
-  background: var(--bg-dark);
-  border-color: transparent;
-}
-
-html[data-tab-style='chrome'] .tab-list {
-  gap: var(--chrome-gap);
-  padding: var(--chrome-flare) 0 var(--chrome-flare);
-}
-
-html[data-tab-style='chrome'] .pinned-site-list {
-  gap: var(--chrome-gap);
-  margin: 0 0 var(--chrome-gap);
-  padding: 0 0 var(--chrome-gap);
-}
-
-html[data-tab-style='chrome'] .tab-new-btn {
-  margin: 4px auto 0;
-}
-
 html[data-tab-style='chrome'] .tab-item,
 html[data-tab-style='chrome'] .pinned-site-btn {
-  min-height: 44px;
-  margin: 0 8px 0 0;
-  padding: 8px 4px 8px 0;
-  border-radius: 0 12px 12px 0;
-}
-
-html[data-tab-style='chrome'] .app-layout[data-side='left'] .tab-item,
-html[data-tab-style='chrome'] .app-layout[data-side='left'] .pinned-site-btn {
-  margin: 0 0 0 8px;
-  padding: 8px 0 8px 4px;
-  border-radius: 12px 0 0 12px;
-}
-
-html[data-tab-style='chrome'] .tab-item .tab-icon,
-html[data-tab-style='chrome'] .pinned-site-btn:not(.open) .tab-icon {
-  opacity: 0.8;
-}
-
-html[data-tab-style='chrome'] .tab-item:hover,
-html[data-tab-style='chrome'] .pinned-site-btn:hover {
-  background: var(--bg-hover);
+  border-radius: 12px;
 }
 
 html[data-tab-style='chrome'] .tab-item.active,
 html[data-tab-style='chrome'] .pinned-site-btn.active {
-  background: var(--bg-toolbar);
+  background: var(--bg-active);
 }
 
-html[data-tab-style='chrome'] .tab-item.active .tab-icon,
-html[data-tab-style='chrome'] .pinned-site-btn.active .tab-icon {
-  opacity: 1;
-}
-
-/* The curls: a square in the strip's colour with the toolbar colour left in
-   the corner, so the tab's edge flows into the page edge. */
-html[data-tab-style='chrome'] .app-layout[data-side] :is(.tab-item, .pinned-site-btn).active::before,
-html[data-tab-style='chrome'] .app-layout[data-side] :is(.tab-item, .pinned-site-btn).active::after {
-  content: '';
-  position: absolute;
-  top: auto;
-  bottom: auto;
-  left: 0;
-  right: auto;
-  width: var(--chrome-flare);
-  height: var(--chrome-flare);
-  margin: 0;
-  border-radius: 0;
-  pointer-events: none;
-}
-
+/* The accent bar is replaced by the block. */
 html[data-tab-style='chrome'] .app-layout[data-side] :is(.tab-item, .pinned-site-btn).active::before {
-  top: calc(-1 * var(--chrome-flare));
-  background: radial-gradient(circle at 100% 0, transparent var(--chrome-flare), var(--bg-toolbar) calc(var(--chrome-flare) + 0.5px));
+  content: none;
 }
 
-html[data-tab-style='chrome'] .app-layout[data-side] :is(.tab-item, .pinned-site-btn).active::after {
-  bottom: calc(-1 * var(--chrome-flare));
-  background: radial-gradient(circle at 100% 100%, transparent var(--chrome-flare), var(--bg-toolbar) calc(var(--chrome-flare) + 0.5px));
+html[data-tab-style='chrome'] .tab-new-btn {
+  border-radius: 12px;
+  background: var(--bg-active);
+  color: var(--text-primary);
 }
 
-/* Left dock: the page edge is on the right. */
-html[data-tab-style='chrome'] .app-layout[data-side='left'] :is(.tab-item, .pinned-site-btn).active::before,
-html[data-tab-style='chrome'] .app-layout[data-side='left'] :is(.tab-item, .pinned-site-btn).active::after {
-  left: auto;
-  right: 0;
+html[data-tab-style='chrome'] .tab-new-btn:hover {
+  background: color-mix(in srgb, var(--accent) 22%, var(--bg-active));
+  color: var(--text-primary);
 }
 
-html[data-tab-style='chrome'] .app-layout[data-side='left'] :is(.tab-item, .pinned-site-btn).active::before {
-  background: radial-gradient(circle at 0 0, transparent var(--chrome-flare), var(--bg-toolbar) calc(var(--chrome-flare) + 0.5px));
-}
-
-html[data-tab-style='chrome'] .app-layout[data-side='left'] :is(.tab-item, .pinned-site-btn).active::after {
-  background: radial-gradient(circle at 0 100%, transparent var(--chrome-flare), var(--bg-toolbar) calc(var(--chrome-flare) + 0.5px));
-}
-
-html[data-tab-style='chrome'] .tab-item.active .tab-unread-dot,
-html[data-tab-style='chrome'] .pinned-site-btn.active .tab-unread-dot {
-  box-shadow: 0 0 0 2px var(--bg-toolbar);
-}
-
-html[data-tab-style='chrome'] .tab-unread-dot {
-  box-shadow: 0 0 0 2px var(--bg-dark);
+html[data-tab-style='chrome'] .ribbon-settings-btn,
+html[data-tab-style='chrome'] .ribbon-settings-btn.active {
+  border-radius: 12px;
 }

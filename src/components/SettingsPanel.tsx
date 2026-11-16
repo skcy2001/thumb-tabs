@@ -21,24 +21,16 @@ const BINDER_LABEL: Record<BinderShapeId, string> = {
 
 /** A miniature ribbon in a flat tab shape, drawn in the current theme's colours. */
 function TabStylePreview({ style }: { style: 'classic' | 'chrome' }) {
-  const tab = (y: number, active: boolean) =>
-    style === 'classic' ? (
-      <g key={y}>
-        <rect x="4" y={y + 2} width="26" height="24" rx="5" fill={active ? 'var(--bg-active)' : 'none'} />
-        {active && <rect x="0" y={y + 6} width="3" height="16" rx="1.5" fill="var(--accent)" />}
-        <circle cx="17" cy={y + 14} r="5" fill="var(--text-secondary)" />
-      </g>
-    ) : (
-      <g key={y}>
-        {active
-          ? <path d={`M0 ${y - 4} q0 4 4 4 H0 Z M2 ${y} H24 q8 0 8 8 v10 q0 8 -8 8 H2 Z M0 ${y + 26} q4 0 4 4 H0 Z`} fill="var(--bg-toolbar)" stroke="var(--border)" strokeWidth="0.75" />
-          : <rect x="2" y={y + 2} width="24" height="22" rx="6" fill="var(--bg-active)" opacity="0.5" />}
-        <circle cx="16" cy={y + 14} r="4" fill="var(--text-secondary)" />
-      </g>
-    )
+  const tab = (y: number, active: boolean) => (
+    <g key={y}>
+      {active && style === 'classic' && <rect x="0" y={y + 6} width="3" height="16" rx="1.5" fill="var(--accent)" />}
+      {active && style === 'chrome' && <rect x="4" y={y + 2} width="26" height="24" rx="8" fill="var(--bg-active)" />}
+      <circle cx="17" cy={y + 14} r="5" fill="var(--text-secondary)" />
+    </g>
+  )
   return (
     <svg className="tab-style-preview" viewBox="0 0 34 100" width="34" height="100" aria-hidden="true">
-      <rect width="34" height="100" rx="4" fill={style === 'chrome' ? 'var(--bg-dark)' : 'var(--bg-strip)'} />
+      <rect width="34" height="100" rx="4" fill="var(--bg-strip)" />
       {[6, 36, 66].map((y, i) => tab(y, i === 1))}
     </svg>
   )
@@ -120,7 +112,25 @@ function AppearancePage() {
           </Choice>
         ))}
       </Choices>
-      <Choices title="Tab shape">
+      <Choices
+        title="Tab shape"
+        submenu={appearance.tabStyle === 'binder' && (
+          <div className="choice-grid choice-grid-narrow" role="radiogroup" aria-label="Binder shape">
+            {binderShapeIds().map((id, i) => (
+              <Choice
+                key={id}
+                selected={appearance.binderShape === id}
+                label={BINDER_LABEL[id]}
+                onSelect={() => update({ tabStyle: 'binder', binderShape: id })}
+              >
+                <span className="tab-style-frame binder-card-frame" data-theme={appearance.theme}>
+                  <BinderPreview id={id} divider={i % 6} />
+                </span>
+              </Choice>
+            ))}
+          </div>
+        )}
+      >
         {(['classic', 'chrome'] as const).map(id => (
           <Choice
             key={id}
@@ -131,30 +141,22 @@ function AppearancePage() {
             <span className="tab-style-frame" data-theme={appearance.theme}><TabStylePreview style={id} /></span>
           </Choice>
         ))}
-      </Choices>
-      <Choices title="Binder" wide>
-        {binderShapeIds().map((id, i) => (
-          <Choice
-            key={id}
-            selected={appearance.tabStyle === 'binder' && appearance.binderShape === id}
-            label={BINDER_LABEL[id]}
-            onSelect={() => update({ tabStyle: 'binder', binderShape: id })}
-          >
-            <span className="tab-style-frame binder-card-frame" data-theme={appearance.theme}>
-              <BinderPreview id={id} divider={i % 6} />
-            </span>
-          </Choice>
-        ))}
+        <Choice selected={appearance.tabStyle === 'binder'} label="Binder" onSelect={() => update({ tabStyle: 'binder' })}>
+          <span className="tab-style-frame binder-card-frame" data-theme={appearance.theme}>
+            <BinderPreview id={appearance.binderShape} divider={0} />
+          </span>
+        </Choice>
       </Choices>
     </>
   )
 }
 
-function Choices({ title, wide, children }: { title: string; wide?: boolean; children: ReactNode }) {
+function Choices({ title, submenu, children }: { title: string; submenu?: ReactNode; children: ReactNode }) {
   return (
     <section className="customizer-group">
       <h3>{title}</h3>
-      <div className={`choice-grid ${wide ? 'choice-grid-narrow' : ''}`} role="radiogroup" aria-label={title}>{children}</div>
+      <div className="choice-grid" role="radiogroup" aria-label={title}>{children}</div>
+      {submenu && <div className="choice-submenu">{submenu}</div>}
     </section>
   )
 }

@@ -39,11 +39,12 @@ Node ships with the app. Formerly part of Tabbar (originally Sidebar).
   moving back into the page hides it without moving or resizing the page.
 - Sized popups retain `window.opener` and their parent profile for OAuth. Ordinary
   new-window links open in tabs.
-- Settings (the gear tab at the bottom of the ribbon) with an Appearance page:
-  four colour themes (Cocoa, Midnight, Graphite, Forest), Classic and Chrome
-  tab shapes (Chrome draws browser-style tabs with no drag handle; dock left or
-  right from the ribbon's right-click menu), and five Binder shapes. Changes
-  apply at once and are remembered.
+- Settings (the gear tab at the bottom of the ribbon, which closes when you pick
+  a tab) with an Appearance page: four colour themes (Cocoa, Midnight, Graphite,
+  Forest) and three tab shapes. Classic and Chrome share one layout and differ
+  only in the highlight (accent bar vs. a rounded block, with no drag handle in
+  Chrome; dock left or right from the ribbon's right-click menu). Binder opens a
+  sub-menu of five shapes. Changes apply at once and are remembered.
 - Native Windows context menus open inward from the original click position,
   with automatic vertical adjustment near the screen boundary.
 - Tray controls, open in the default browser, single-instance handoff, and

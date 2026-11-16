@@ -755,6 +755,10 @@ async fn apply(app: &AppHandle, a: Value) -> Result<()> {
             shell::show(app)?;
             let _ = app.emit_to("pane", "toolbar-command", "settings");
         }
+        "settingsOpen" => {
+            let _ = app.emit_to("ribbon", "settings-open", a["open"].as_bool().unwrap_or(false));
+            return Ok(());
+        }
         "setAppearance" => {
             let mut appearance = model::Appearance {
                 theme: string(&a, "theme")?.into(),
@@ -881,6 +885,11 @@ async fn apply(app: &AppHandle, a: Value) -> Result<()> {
         _ => return Err("Unknown Tabbar action".into()),
     }
     shell::layout(app)?;
+    // Picking a tab, like opening Settings, replaces whatever panel is open
+    // over the page.
+    if matches!(kind, "activate" | "launchPin" | "create" | "openTab" | "openUrl") {
+        let _ = app.emit_to("pane", "toolbar-command", "closePanel");
+    }
     if !snapshot(app).collapsed {
         if (kind == "create" && a["url"].is_null())
             || (kind == "toggleCollapsed"
