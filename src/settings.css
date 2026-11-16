@@ -86,15 +86,46 @@
   color: var(--text-primary);
 }
 
-/* The Binder shapes, nested under the Binder card of Tab shape. */
-.choice-submenu {
-  margin: 10px 6px 0 18px;
-  padding-left: 10px;
-  border-left: 2px solid var(--border);
+/* Expandable groups of tab shapes under Tab shape. */
+.choice-section {
+  margin-top: 4px;
 }
 
-.choice-submenu .choice-grid {
-  padding: 0;
+.choice-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-primary);
+}
+
+.choice-section-toggle:hover {
+  background: var(--bg-hover);
+}
+
+.choice-section-chevron {
+  display: inline-block;
+  width: 10px;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-secondary);
+  transition: transform 120ms ease;
+}
+
+.choice-section-toggle[aria-expanded='true'] .choice-section-chevron {
+  transform: rotate(90deg);
+}
+
+.choice-section .choice-grid {
+  margin: 4px 0 6px;
+}
+
+.choice-grid-narrow {
   grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
 }
 

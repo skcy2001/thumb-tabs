@@ -99,6 +99,8 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
 
 function AppearancePage() {
   const [appearance, update] = useAppearance()
+  // The group holding the current shape starts open; the other can be expanded.
+  const [open, setOpen] = useState({ basic: appearance.tabStyle !== 'binder', binder: appearance.tabStyle === 'binder' })
   return (
     <>
       <Choices title="Theme">
@@ -112,52 +114,63 @@ function AppearancePage() {
           </Choice>
         ))}
       </Choices>
-      <Choices
-        title="Tab shape"
-        submenu={appearance.tabStyle === 'binder' && (
-          <div className="choice-grid choice-grid-narrow" role="radiogroup" aria-label="Binder shape">
-            {binderShapeIds().map((id, i) => (
-              <Choice
-                key={id}
-                selected={appearance.binderShape === id}
-                label={BINDER_LABEL[id]}
-                onSelect={() => update({ tabStyle: 'binder', binderShape: id })}
-              >
-                <span className="tab-style-frame binder-card-frame" data-theme={appearance.theme}>
-                  <BinderPreview id={id} divider={i % 6} />
-                </span>
-              </Choice>
-            ))}
-          </div>
-        )}
-      >
-        {(['classic', 'chrome'] as const).map(id => (
-          <Choice
-            key={id}
-            selected={appearance.tabStyle === id}
-            label={id === 'classic' ? 'Classic' : 'Chrome'}
-            onSelect={() => update({ tabStyle: id })}
-          >
-            <span className="tab-style-frame" data-theme={appearance.theme}><TabStylePreview style={id} /></span>
-          </Choice>
-        ))}
-        <Choice selected={appearance.tabStyle === 'binder'} label="Binder" onSelect={() => update({ tabStyle: 'binder' })}>
-          <span className="tab-style-frame binder-card-frame" data-theme={appearance.theme}>
-            <BinderPreview id={appearance.binderShape} divider={0} />
-          </span>
-        </Choice>
-      </Choices>
+      <section className="customizer-group">
+        <h3>Tab shape</h3>
+        <Subsection title="Basic" open={open.basic} onToggle={() => setOpen(o => ({ ...o, basic: !o.basic }))}>
+          {(['classic', 'chrome'] as const).map(id => (
+            <Choice
+              key={id}
+              selected={appearance.tabStyle === id}
+              label={id === 'classic' ? 'Classic' : 'Chrome'}
+              onSelect={() => update({ tabStyle: id })}
+            >
+              <span className="tab-style-frame" data-theme={appearance.theme}><TabStylePreview style={id} /></span>
+            </Choice>
+          ))}
+        </Subsection>
+        <Subsection title="Binder" open={open.binder} onToggle={() => setOpen(o => ({ ...o, binder: !o.binder }))}>
+          {binderShapeIds().map((id, i) => (
+            <Choice
+              key={id}
+              selected={appearance.tabStyle === 'binder' && appearance.binderShape === id}
+              label={BINDER_LABEL[id]}
+              onSelect={() => update({ tabStyle: 'binder', binderShape: id })}
+            >
+              <span className="tab-style-frame binder-card-frame" data-theme={appearance.theme}>
+                <BinderPreview id={id} divider={i % 6} />
+              </span>
+            </Choice>
+          ))}
+        </Subsection>
+      </section>
     </>
   )
 }
 
-function Choices({ title, submenu, children }: { title: string; submenu?: ReactNode; children: ReactNode }) {
+function Choices({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="customizer-group">
       <h3>{title}</h3>
       <div className="choice-grid" role="radiogroup" aria-label={title}>{children}</div>
-      {submenu && <div className="choice-submenu">{submenu}</div>}
     </section>
+  )
+}
+
+/** A collapsible group of choices inside a section. */
+function Subsection({ title, open, onToggle, children }: {
+  title: string
+  open: boolean
+  onToggle: () => void
+  children: ReactNode
+}) {
+  return (
+    <div className="choice-section">
+      <button className="choice-section-toggle" type="button" aria-expanded={open} onClick={onToggle}>
+        <span className="choice-section-chevron" aria-hidden="true">›</span>
+        {title}
+      </button>
+      {open && <div className="choice-grid choice-grid-narrow" role="radiogroup" aria-label={`${title} tab shapes`}>{children}</div>}
+    </div>
   )
 }
 
