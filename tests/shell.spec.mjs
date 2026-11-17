@@ -225,7 +225,7 @@ test('settings opens from the ribbon button; appearance picks theme, tab shape a
   await expect(panel.locator('.customizer-hint, .choice-desc')).toHaveCount(0)
   await expect(panel.getByRole('radio',{name:'Light'})).toHaveCount(0)
   await expect(panel.getByRole('radio',{name:'Pill'})).toHaveCount(0)
-  await expect(panel.getByRole('radiogroup',{name:'Theme'}).getByRole('radio')).toHaveText(['Cocoa','Midnight','Graphite','Forest','Lagoon','Sunset','Amethyst','High contrast'])
+  await expect(panel.getByRole('radiogroup',{name:'Theme'}).getByRole('radio')).toHaveText(['Cocoa','Midnight','Graphite','Forest','Lagoon','Sunset','Dracula','High contrast'])
   // Tab shape has two expandable subsections; the one holding the current shape starts open.
   const basic=panel.getByRole('button',{name:'Basic',exact:true})
   const binder=panel.getByRole('button',{name:'Binder',exact:true})
@@ -306,7 +306,7 @@ test('every tab shape and theme renders in the ribbon with its drag handle',asyn
 test('every theme styles the ribbon, and the settings button is always the accent colour',async({page})=>{
   const errors=await mount(page,'ribbon')
   await page.setViewportSize({width:53,height:420})
-  for (const theme of ['cocoa','midnight','graphite','forest','lagoon','sunset','amethyst','contrast']) {
+  for (const theme of ['cocoa','midnight','graphite','forest','lagoon','sunset','dracula','contrast']) {
     await page.evaluate(({theme})=>{const s=structuredClone(window.testHost.state);s.settings.appearance={theme,tabStyle:'binder',binderShape:'wave'};return window.testHost.update(s)},{theme})
     await expect(page.locator('html')).toHaveAttribute('data-theme',theme)
     const colours=await page.evaluate(()=>{

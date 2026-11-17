@@ -100,20 +100,21 @@
   --close-btn: #ff7b93;
 }
 
-/* Slate ribbon, lavender accent. */
-[data-theme='amethyst'] {
+/* Dracula: its slate background and purple, with the foreground and red from
+   the same palette. */
+[data-theme='dracula'] {
   color-scheme: dark;
-  --bg-dark: #1c1d27;
-  --bg-strip: #282a37;
-  --bg-toolbar: #2d2f3e;
-  --bg-hover: #373a4d;
-  --bg-active: #454966;
-  --accent: #c9a8fb;
-  --accent-hover: #dcc3ff;
-  --text-primary: #eeeaf9;
-  --text-secondary: #b5b1cc;
-  --border: #40435a;
-  --close-btn: #ff8aa8;
+  --bg-dark: #21222c;
+  --bg-strip: #282a36;
+  --bg-toolbar: #2e303f;
+  --bg-hover: #383a4b;
+  --bg-active: #44475a;
+  --accent: #bd93f9;
+  --accent-hover: #d2b3ff;
+  --text-primary: #f8f8f2;
+  --text-secondary: #b4b8d2;
+  --border: #44475a;
+  --close-btn: #ff5555;
 }
 
 /* Black and white. The border stays grey so a selected card, outlined in the

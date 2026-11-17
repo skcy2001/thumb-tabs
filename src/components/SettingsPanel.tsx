@@ -11,7 +11,7 @@ const THEME_LABEL: Record<ThemeId, string> = {
   forest: 'Forest',
   lagoon: 'Lagoon',
   sunset: 'Sunset',
-  amethyst: 'Amethyst',
+  dracula: 'Dracula',
   contrast: 'High contrast',
 }
 

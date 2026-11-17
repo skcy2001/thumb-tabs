@@ -75,7 +75,7 @@ export interface MediaPlayerInfo {
 
 export type Side = 'left' | 'right'
 
-export const THEMES = ['cocoa', 'midnight', 'graphite', 'forest', 'lagoon', 'sunset', 'amethyst', 'contrast'] as const
+export const THEMES = ['cocoa', 'midnight', 'graphite', 'forest', 'lagoon', 'sunset', 'dracula', 'contrast'] as const
 export type ThemeId = (typeof THEMES)[number]
 export const TAB_STYLES = ['binder', 'classic', 'chrome'] as const
 export type TabStyleId = (typeof TAB_STYLES)[number]

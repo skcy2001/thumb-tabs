@@ -207,12 +207,14 @@
 
 .theme-swatch-dot {
   position: absolute;
-  left: 7px;
-  top: 14px;
+  /* Centred across the ribbon strip (26% wide, less its 1px border). */
+  left: calc(13% - 0.5px);
+  top: 9px;
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: var(--accent);
+  transform: translateX(-50%);
 }
 
 /* A tab shape, on the ribbon colour of the chosen theme. */

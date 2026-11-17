@@ -41,7 +41,7 @@ Node ships with the app. Formerly part of Tabbar (originally Sidebar).
   new-window links open in tabs.
 - Settings (the gear tab at the bottom of the ribbon, which closes when you pick
   a tab) with an Appearance page: eight colour themes (Cocoa, Midnight, Graphite,
-  Forest, Lagoon, Sunset, Amethyst and a black-and-white High contrast) and tab
+  Forest, Lagoon, Sunset, Dracula and a black-and-white High contrast) and tab
   shapes in two expandable groups. Basic has Classic and Chrome,
   which share one layout and differ only in the highlight (accent bar vs. a
   rounded block). Binder has five shapes; the bulkier Chamfer, Rounded and Cove
