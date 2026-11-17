@@ -21,7 +21,12 @@
 
 html[data-tab-style='binder'],
 .binder-swatch {
-  --binder-tab-h: 88px;
+  --binder-base-h: 88px; /* a tab's height at the standard size */
+  --binder-trim: 0px; /* how much shorter this shape's tabs are; see below */
+  --binder-tab-h: calc(var(--binder-base-h) - var(--binder-trim));
+  /* Each tab is inset by half the trim, top and bottom, so it keeps its centre
+     and the tabs spread out by the full trim. */
+  --binder-inset: calc(var(--binder-trim) / 2);
   --binder-slant: 10px; /* how much the top and bottom edges slope */
   --binder-round: 8px;  /* rounding at the outer corners */
   --binder-overlap: 10.8px; /* how far each tab tucks over the one above */
@@ -31,6 +36,17 @@ html[data-tab-style='binder'],
   /* The divider outline, shared by the tabs and the add-tab button, is set on
      the root as --binder-shape-right / --binder-shape-left (src/binderShapes.ts)
      from the chosen shape. */
+}
+
+/* These shapes read as bulkier, so their tabs are 15% shorter. Declared after
+   the block above so it wins; --binder-tab-h is then worked out from it. */
+html[data-binder-shape='chamfer'],
+html[data-binder-shape='rounded'],
+html[data-binder-shape='cove'],
+.binder-swatch[data-shape='chamfer'],
+.binder-swatch[data-shape='rounded'],
+.binder-swatch[data-shape='cove'] {
+  --binder-trim: calc(var(--binder-base-h) * 0.15);
 }
 
 /* ---- Ribbon backdrop: binder board, page edge drawn as a 1px line ---- */
@@ -93,7 +109,7 @@ html[data-tab-style='binder'] [data-side] .pinned-site-btn {
   flex-direction: column;
   justify-content: flex-start;
   gap: 5px;
-  margin: 0 var(--outer-gap) 0 0;
+  margin: var(--binder-inset) var(--outer-gap) var(--binder-inset) 0;
   border-radius: 0 11px 11px 0;
   box-shadow: none;
   background:
@@ -108,7 +124,7 @@ html[data-tab-style='binder'] [data-side] .pinned-site-btn {
 html[data-tab-style='binder'] [data-side='left'] .tab-item,
 html[data-tab-style='binder'] [data-side='left'] .pinned-site-btn {
   --edge-dir: to left;
-  margin: 0 0 0 var(--outer-gap);
+  margin: var(--binder-inset) 0 var(--binder-inset) var(--outer-gap);
   padding: calc(16px + var(--binder-flare)) 3px calc(var(--binder-overlap) + 4px + var(--binder-flare)) 9px;
   border-radius: 11px 0 0 11px;
 }
@@ -132,10 +148,12 @@ html[data-tab-style='binder'] [data-side='left'] .pinned-site-btn {
 }
 
 /* Overlap: each tab's body tucks --binder-overlap over the one above (the
-   boxes overlap a further 2 x --binder-flare, the room for the curves). */
+   boxes overlap a further 2 x --binder-flare, the room for the curves). The
+   inset margins on a tab and its neighbour add back what a trimmed shape
+   lost in height, so every tab keeps its centre. */
 html[data-tab-style='binder'] [data-side] .tab-item + .tab-item,
 html[data-tab-style='binder'] [data-side] .pinned-site-btn + .pinned-site-btn {
-  margin-top: calc(-1 * (var(--binder-overlap) + 2 * var(--binder-flare)));
+  margin-top: calc(var(--binder-inset) - (var(--binder-overlap) + 2 * var(--binder-flare)));
 }
 
 /* The classic style draws an accent bar with ::before; the shape replaces it. */
@@ -257,8 +275,8 @@ html[data-tab-style='binder'] [data-side] .tab-new-btn {
   --tab-bg: color-mix(in srgb, var(--accent) 12%, var(--bg-strip));
   --edge-dir: to right;
   width: auto;
-  /* Shorter than a tab: 55% of a tab's body. */
-  height: calc(var(--binder-tab-h) * 0.55 + 2 * var(--binder-flare));
+  /* Shorter than a tab: 55% of a tab's body, whatever the shape. */
+  height: calc(var(--binder-base-h) * 0.55 + 2 * var(--binder-flare));
   flex-shrink: 0;
   margin: 4px var(--binder-reach) 2px 0;
   padding: var(--binder-flare) 9px var(--binder-flare) 3px;

@@ -154,6 +154,7 @@
   display: block;
   width: calc(100% - var(--binder-reach));
   height: calc(var(--binder-tab-h) + 2 * var(--binder-flare));
+  margin: var(--binder-inset) 0;
   background:
     linear-gradient(to right, var(--border) 1px, transparent 1px),
     linear-gradient(to right, rgba(0, 0, 0, 0.4), transparent 5px),

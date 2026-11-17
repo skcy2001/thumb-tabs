@@ -32,6 +32,7 @@ function applyAppearance(look: Appearance) {
   const root = document.documentElement
   root.dataset.theme = look.theme
   root.dataset.tabStyle = look.tabStyle
+  root.dataset.binderShape = look.binderShape
   root.style.setProperty('--binder-shape-right', binderShape(look.binderShape, 'right'))
   root.style.setProperty('--binder-shape-left', binderShape(look.binderShape, 'left'))
 }

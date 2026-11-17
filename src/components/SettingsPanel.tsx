@@ -9,6 +9,10 @@ const THEME_LABEL: Record<ThemeId, string> = {
   midnight: 'Midnight',
   graphite: 'Graphite',
   forest: 'Forest',
+  lagoon: 'Lagoon',
+  sunset: 'Sunset',
+  amethyst: 'Amethyst',
+  contrast: 'High contrast',
 }
 
 const BINDER_LABEL: Record<BinderShapeId, string> = {
@@ -40,7 +44,7 @@ function TabStylePreview({ style }: { style: 'classic' | 'chrome' }) {
 function BinderPreview({ id, divider }: { id: BinderShapeId; divider: number }) {
   return (
     <span className="binder-frame" aria-hidden="true">
-      <span className="binder-swatch" data-divider={divider} style={{ clipPath: binderShape(id, 'right') }}>
+      <span className="binder-swatch" data-divider={divider} data-shape={id} style={{ clipPath: binderShape(id, 'right') }}>
         <span className="binder-swatch-logo" />
       </span>
     </span>

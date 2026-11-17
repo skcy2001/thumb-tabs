@@ -225,6 +225,7 @@ test('settings opens from the ribbon button; appearance picks theme, tab shape a
   await expect(panel.locator('.customizer-hint, .choice-desc')).toHaveCount(0)
   await expect(panel.getByRole('radio',{name:'Light'})).toHaveCount(0)
   await expect(panel.getByRole('radio',{name:'Pill'})).toHaveCount(0)
+  await expect(panel.getByRole('radiogroup',{name:'Theme'}).getByRole('radio')).toHaveText(['Cocoa','Midnight','Graphite','Forest','Lagoon','Sunset','Amethyst','High contrast'])
   // Tab shape has two expandable subsections; the one holding the current shape starts open.
   const basic=panel.getByRole('button',{name:'Basic',exact:true})
   const binder=panel.getByRole('button',{name:'Binder',exact:true})
@@ -299,6 +300,59 @@ test('every tab shape and theme renders in the ribbon with its drag handle',asyn
       await page.waitForTimeout(200)
       await page.screenshot({path:`${process.env.SHOT_DIR}/ribbon-${side}-${look.tabStyle}-${look.binderShape}.png`})
     }
+  }
+  expect(errors).toEqual([])
+})
+test('every theme styles the ribbon, and the settings button is always the accent colour',async({page})=>{
+  const errors=await mount(page,'ribbon')
+  await page.setViewportSize({width:53,height:420})
+  for (const theme of ['cocoa','midnight','graphite','forest','lagoon','sunset','amethyst','contrast']) {
+    await page.evaluate(({theme})=>{const s=structuredClone(window.testHost.state);s.settings.appearance={theme,tabStyle:'binder',binderShape:'wave'};return window.testHost.update(s)},{theme})
+    await expect(page.locator('html')).toHaveAttribute('data-theme',theme)
+    const colours=await page.evaluate(()=>{
+      const probe=document.createElement('i');probe.style.color='var(--accent)';document.body.append(probe)
+      const accent=getComputedStyle(probe).color;probe.remove()
+      return {accent,gear:getComputedStyle(document.querySelector('.ribbon-settings-btn')).color,strip:getComputedStyle(document.querySelector('.tab-strip')).backgroundColor}
+    })
+    expect(colours.gear,theme).toBe(colours.accent)
+    if (process.env.SHOT_DIR) {
+      await page.waitForTimeout(150)
+      await page.screenshot({path:`${process.env.SHOT_DIR}/theme-${theme}.png`})
+    }
+  }
+  await page.evaluate(()=>{const s=structuredClone(window.testHost.state);s.settings.appearance={theme:'contrast',tabStyle:'binder',binderShape:'wave'};return window.testHost.update(s)})
+  expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.tab-strip')).backgroundColor)).toContain('0, 0, 0')
+  expect(errors).toEqual([])
+})
+test('chamfer, rounded and cove tabs are 15% shorter, spread out, and keep their centres',async({page})=>{
+  const errors=await mount(page,'ribbon')
+  await page.setViewportSize({width:53,height:560})
+  const measure=async(side,binderShape)=>{
+    await page.evaluate(({side,binderShape})=>{const s=structuredClone(window.testHost.state);s.settings.side=side;s.settings.appearance={theme:'cocoa',tabStyle:'binder',binderShape};return window.testHost.update(s)},{side,binderShape})
+    await expect(page.locator('html')).toHaveAttribute('data-binder-shape',binderShape)
+    await page.waitForTimeout(300) // tab margins ease over 180ms
+    return page.locator('.tab-item, .pinned-site-btn').evaluateAll(els=>els.map(e=>{const r=e.getBoundingClientRect();return {h:r.height,mid:r.top+r.height/2}}))
+  }
+  for (const side of ['right','left']) {
+    const base=await measure(side,'wave')
+    expect(base.length).toBeGreaterThan(1)
+    for (const shape of ['chamfer','rounded','cove']) {
+      const trimmed=await measure(side,shape)
+      if (process.env.SHOT_DIR) {
+        await page.locator('.tab-item').hover()
+        await page.waitForTimeout(300)
+        await page.screenshot({path:`${process.env.SHOT_DIR}/trim-${side}-${shape}-hover.png`})
+        await page.mouse.move(300,300)
+      }
+      expect(trimmed.length).toBe(base.length)
+      trimmed.forEach((t,i)=>{
+        // The body is 15% shorter; the box also carries the 2 x 12px flare, which does not shrink.
+        expect(base[i].h-t.h,`${shape} tab ${i} height`).toBeCloseTo(88*0.15,1)
+        expect(Math.abs(t.mid-base[i].mid),`${shape} tab ${i} centre`).toBeLessThan(0.6)
+      })
+    }
+    const flat=await measure(side,'trapezoid')
+    flat.forEach((t,i)=>expect(t.h,`trapezoid tab ${i}`).toBeCloseTo(base[i].h,1))
   }
   expect(errors).toEqual([])
 })

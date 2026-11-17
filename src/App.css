@@ -587,17 +587,16 @@ html[data-role='player'] body { background: var(--preview-bg); color: var(--prev
   height: 36px;
   margin: 4px 8px 0;
   border-radius: var(--radius);
-  color: var(--text-secondary);
+  color: var(--accent);
 }
 
 .ribbon-settings-btn:hover {
   background: var(--bg-hover);
-  color: var(--accent);
+  color: var(--accent-hover);
 }
 
 .ribbon-settings-btn.active {
   background: var(--bg-active);
-  color: var(--accent);
 }
 
 .ribbon-settings-btn:focus-visible {

@@ -67,3 +67,68 @@
   --border: #2c4336;
   --close-btn: #f2907c;
 }
+
+/* Teal ribbon, gold accent. */
+[data-theme='lagoon'] {
+  color-scheme: dark;
+  --bg-dark: #00332f;
+  --bg-strip: #004743;
+  --bg-toolbar: #00504b;
+  --bg-hover: #005e58;
+  --bg-active: #00706a;
+  --accent: #d0ac01;
+  --accent-hover: #e3c224;
+  --text-primary: #f6f3e4;
+  --text-secondary: #a8cbc6;
+  --border: #0b6a63;
+  --close-btn: #ff8c7a;
+}
+
+/* Navy ribbon, salmon accent. */
+[data-theme='sunset'] {
+  color-scheme: dark;
+  --bg-dark: #01212f;
+  --bg-strip: #023047;
+  --bg-toolbar: #053a54;
+  --bg-hover: #0b4766;
+  --bg-active: #145c82;
+  --accent: #ff9e8b;
+  --accent-hover: #ffb7a8;
+  --text-primary: #fdf1ee;
+  --text-secondary: #a9c6d6;
+  --border: #14506f;
+  --close-btn: #ff7b93;
+}
+
+/* Slate ribbon, lavender accent. */
+[data-theme='amethyst'] {
+  color-scheme: dark;
+  --bg-dark: #1c1d27;
+  --bg-strip: #282a37;
+  --bg-toolbar: #2d2f3e;
+  --bg-hover: #373a4d;
+  --bg-active: #454966;
+  --accent: #c9a8fb;
+  --accent-hover: #dcc3ff;
+  --text-primary: #eeeaf9;
+  --text-secondary: #b5b1cc;
+  --border: #40435a;
+  --close-btn: #ff8aa8;
+}
+
+/* Black and white. The border stays grey so a selected card, outlined in the
+   white accent, still stands out from the others. */
+[data-theme='contrast'] {
+  color-scheme: dark;
+  --bg-dark: #000000;
+  --bg-strip: #000000;
+  --bg-toolbar: #000000;
+  --bg-hover: #262626;
+  --bg-active: #3d3d3d;
+  --accent: #ffffff;
+  --accent-hover: #e6e6e6;
+  --text-primary: #ffffff;
+  --text-secondary: #e6e6e6;
+  --border: #8c8c8c;
+  --close-btn: #ff6b6b;
+}
