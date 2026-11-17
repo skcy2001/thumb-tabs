@@ -1,0 +1,52 @@
+name: Release assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to attach assets to
+        default: v0.1.0
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            arch: x64
+          - target: aarch64-pc-windows-msvc
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npx tauri build --target ${{ matrix.target }}
+      - name: Collect assets
+        shell: pwsh
+        run: |
+          $t = "${{ matrix.target }}"
+          New-Item -ItemType Directory -Force out | Out-Null
+          $setup = Get-ChildItem "src-tauri/target/$t/release/bundle/nsis/*-setup.exe" | Select-Object -First 1
+          Copy-Item $setup.FullName "out/Tabbar_${{ matrix.arch }}-setup.exe"
+          Compress-Archive "src-tauri/target/$t/release/tabbar.exe" "out/Tabbar_${{ matrix.arch }}-portable.zip"
+      - name: Upload to release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ inputs.tag }}" (Get-ChildItem out/*).FullName --clobber
