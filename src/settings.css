@@ -71,7 +71,8 @@
 
 /* The chosen option is marked on its preview and label, not on a card. */
 .choice.selected .theme-swatch,
-.choice.selected .tab-style-frame {
+.choice.selected .tab-style-preview,
+.choice.selected .binder-frame {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
@@ -242,19 +243,17 @@
   transform: translateX(-50%);
 }
 
-/* A tab shape, on the ribbon colour of the chosen theme. */
+/* A tab shape: just the ribbon on the chosen theme's colour, no backdrop. */
 .tab-style-frame {
   display: grid;
   place-items: center;
-  flex: 1;
   width: 100%;
-  padding: 6px 0;
-  border-radius: 6px;
-  background: var(--bg-hover);
+  padding: 0;
 }
 
 .tab-style-preview {
   display: block;
+  border-radius: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {
