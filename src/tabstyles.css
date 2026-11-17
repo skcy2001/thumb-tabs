@@ -2,20 +2,10 @@
  * Chrome tab shape — html[data-tab-style="chrome"].
  *
  * The same ribbon as the plain classic strip (App.css) with the same sizes and
- * positions; only the highlights differ. The open tab is a rounded block
- * instead of an accent bar, and the add-tab button is a rounded square. There
- * is no placement handle; dock the ribbon to the other side from the
- * right-click menu instead. The binder style is in binder.css.
+ * positions, drag handle included; only the highlights differ. The open tab is
+ * a rounded block instead of an accent bar, and the add-tab button is a
+ * rounded square. The binder style is in binder.css.
  */
-
-html[data-tab-style='chrome'] .ribbon-drag-handle {
-  display: none;
-}
-
-/* Without the handle below it, the settings button needs its own bottom margin. */
-html[data-tab-style='chrome'] .ribbon-settings-btn {
-  margin-bottom: 8px;
-}
 
 html[data-tab-style='chrome'] .tab-item,
 html[data-tab-style='chrome'] .pinned-site-btn {

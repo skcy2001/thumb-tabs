@@ -43,9 +43,8 @@ Node ships with the app. Formerly part of Tabbar (originally Sidebar).
   a tab) with an Appearance page: four colour themes (Cocoa, Midnight, Graphite,
   Forest) and tab shapes in two expandable groups. Basic has Classic and Chrome,
   which share one layout and differ only in the highlight (accent bar vs. a
-  rounded block, with no drag handle in Chrome; dock left or right from the
-  ribbon's right-click menu). Binder has five shapes. Changes apply at once and
-  are remembered.
+  rounded block). Binder has five shapes. Changes apply at once and are
+  remembered.
 - Native Windows context menus open inward from the original click position,
   with automatic vertical adjustment near the screen boundary.
 - Tray controls, open in the default browser, single-instance handoff, and

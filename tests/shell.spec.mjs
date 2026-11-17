@@ -247,7 +247,6 @@ test('settings opens from the ribbon button; appearance picks theme, tab shape a
   await page.evaluate(()=>{const s=structuredClone(window.testHost.state);s.settings.appearance={theme:'midnight',tabStyle:'chrome',binderShape:'cove'};return window.testHost.update(s)})
   await expect(page.locator('html')).toHaveAttribute('data-theme','midnight')
   await expect(page.locator('html')).toHaveAttribute('data-tab-style','chrome')
-  await expect(page.locator('.ribbon-drag-handle')).toBeHidden()
   await expect(panel.getByRole('radio',{name:'Chrome'})).toHaveAttribute('aria-checked','true')
   await expect(panel.getByRole('radio',{name:'Classic'})).toHaveAttribute('aria-checked','false')
   await expect(panel.getByRole('radio',{name:'Cove'})).toHaveAttribute('aria-checked','false')
@@ -284,7 +283,7 @@ test('picking a tab closes the settings panel; the ribbon button acts like a tab
   await expect(activeTabs).toHaveCount(1)
   expect(errors).toEqual([])
 })
-test('every tab shape and theme renders in the ribbon; chrome has no drag handle',async({page})=>{
+test('every tab shape and theme renders in the ribbon with its drag handle',async({page})=>{
   const errors=await mount(page,'ribbon')
   await page.setViewportSize({width:53,height:420})
   const looks=[
@@ -294,7 +293,7 @@ test('every tab shape and theme renders in the ribbon; chrome has no drag handle
   for (const side of ['right','left']) for (const look of looks) for (const theme of ['cocoa','midnight']) {
     await page.evaluate(({side,look,theme})=>{const s=structuredClone(window.testHost.state);s.settings.side=side;s.settings.appearance={theme,...look};return window.testHost.update(s)},{side,look,theme})
     await expect(page.locator('html')).toHaveAttribute('data-tab-style',look.tabStyle)
-    await expect(page.locator('.ribbon-drag-handle'))[look.tabStyle==='chrome'?'toBeHidden':'toBeVisible']()
+    await expect(page.locator('.ribbon-drag-handle')).toBeVisible()
     await expect(page.getByRole('button',{name:'Settings',exact:true})).toBeVisible()
     if (process.env.SHOT_DIR && theme==='cocoa') {
       await page.waitForTimeout(200)
