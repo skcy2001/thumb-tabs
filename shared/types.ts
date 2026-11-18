@@ -77,7 +77,7 @@ export type Side = 'left' | 'right'
 
 export const THEMES = ['cocoa', 'midnight', 'graphite', 'forest', 'lagoon', 'sunset', 'dracula', 'contrast'] as const
 export type ThemeId = (typeof THEMES)[number]
-export const TAB_STYLES = ['binder', 'classic', 'chrome'] as const
+export const TAB_STYLES = ['binder', 'classic', 'chrome', 'light'] as const
 export type TabStyleId = (typeof TAB_STYLES)[number]
 /** Outlines for the binder tab style; the others ignore it. */
 export const BINDER_SHAPES = [

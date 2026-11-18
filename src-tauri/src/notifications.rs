@@ -1,6 +1,7 @@
-//! Website notifications use WebView2's native display and profile permissions.
-//! Only the permission question is ours; notification content and click/close
-//! events remain with WebView2. COM objects never leave the UI thread.
+//! Website notifications: the permission question, and showing them as Windows
+//! toasts under the app's own name (see "Standard Windows notifications"
+//! below). Permissions live in the WebView2 profile. COM objects never leave
+//! the UI thread.
 use super::{err, model, report, AppHandle, Result, Webview};
 use std::{
     cell::RefCell,
@@ -216,6 +217,23 @@ thread_local! {
 }
 static NEXT_TAG: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
+thread_local! {
+    /// When each recent notification was shown, by site, title and text.
+    static RECENT: RefCell<HashMap<String, std::time::Instant>> = RefCell::new(HashMap::new());
+}
+
+/// Whether this notification repeats one the same site showed in the last few
+/// seconds. Some sites send the same notification twice (from the page and
+/// from its service worker); only the first is shown.
+fn is_repeat(key: String) -> bool {
+    let now = std::time::Instant::now();
+    RECENT.with(|r| {
+        let mut recent = r.borrow_mut();
+        recent.retain(|_, at| now.duration_since(*at) < Duration::from_secs(5));
+        recent.insert(key, now).is_some()
+    })
+}
+
 /// Windows identifies a notification sender by its app user model ID.
 fn app_id(app: &AppHandle) -> String {
     app.config().identifier.clone()
@@ -383,6 +401,16 @@ unsafe fn install_toasts(app: &AppHandle, core: &ICoreWebView2, label: &str) -> 
             }
             let origin = uri(|p| args.SenderOrigin(p)).unwrap_or_default();
             let notification = args.Notification()?;
+            let title = uri(|p| notification.Title(p)).unwrap_or_default();
+            let body = uri(|p| notification.Body(p)).unwrap_or_default();
+            crate::trace::trace!("notification received: origin={origin} title={title:?}");
+            if is_repeat(format!("{origin}
+{title}
+{body}")) {
+                crate::trace::trace!("  repeat, not shown again");
+                notification.ReportShown()?;
+                return args.SetHandled(true);
+            }
             // Only take over once the toast is actually up; otherwise WebView2
             // still shows its own pop-up and nothing is lost, so there is
             // nothing to report to the user.

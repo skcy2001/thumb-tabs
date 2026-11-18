@@ -9,9 +9,11 @@ Node ships with the app. Formerly part of Tabbar (originally Sidebar).
 
 - Ribbon with pinned sites, drag reordering, drag across the divider to
   pin/unpin, unread badges, favicons, and a URL/search toolbar.
-  With the Classic and Chrome shapes, open pins have a small light in the tab's
-  outer bottom corner; the selected pin also has a pink edge marker (Binder tabs
-  show an outer stripe instead). Unread and media badges remain separate.
+  With the Classic and Chrome shapes, open pins have a small dot directly under
+  the icon; the selected pin also has a pink edge marker (Binder tabs show an
+  outer stripe instead). The Light shape shows state only with a light in the
+  tab's outer corner: there when open, accent-coloured when it is the page
+  showing, gone when closed. Unread and media badges remain separate.
 - Separate ribbon and content windows, 220–900px draggable pane width, remembered
   width per site, left/right docking, and monitor placement by dragging the grip.
 - Pinning to the desktop reserves the ribbon's width through Windows AppBar.
@@ -48,9 +50,9 @@ Node ships with the app. Formerly part of Tabbar (originally Sidebar).
   (Solid; Transparent, with a Transparency slider; or Glitter sand, the solid
   colour with glitter settled at the bottom and a Glitter brightness slider) and eight colour themes (Cocoa, Midnight, Graphite,
   Forest, Lagoon, Sunset, Dracula and a black-and-white High contrast) and tab
-  shapes in two expandable groups. Basic has Classic and Chrome,
-  which share one layout and differ only in the highlight (accent bar vs. a
-  rounded block). Binder has nine shapes: Wave, Chamfer, Rounded, Cove and
+  shapes in two expandable groups. Basic has Classic, Chrome and Light,
+  which share one layout and differ only in how they mark state (accent bar,
+  rounded block, or a corner light alone). Binder has nine shapes: Wave, Chamfer, Rounded, Cove and
   Trapezoid, plus Square versions of the first four that meet the page edge at a
   right angle instead of sweeping out of it. The bulkier Chamfer, Rounded and Cove
   (and their Square versions) are drawn 15% shorter and spaced out so the tabs stay where they were. Changes
@@ -76,8 +78,10 @@ profiles. Other website permissions keep their existing behavior.
 
 To change a choice, right-click an open tab or its pinned icon and choose
 **Notifications → Allow / Block / Ask next time**. Reload the website if it caches
-the previous permission. Notifications use WebView2's native Windows display and
-respect Windows notification settings, including Do not disturb. The site can
+the previous permission. Notifications appear as standard Windows notifications
+under the app's name, including ones a page shows through its service worker,
+and respect Windows notification settings, including Do not disturb. A site
+that sends the same notification twice within a few seconds shows it once. The site can
 notify while its tab is in the background or the ribbon is collapsed, as long
 as the page is still running. WebView2 does not support Web Push or persistent
 service-worker notifications; sites that require those APIs need a full browser.

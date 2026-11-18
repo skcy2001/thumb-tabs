@@ -1,5 +1,6 @@
 /*
- * Chrome tab shape — html[data-tab-style="chrome"].
+ * Chrome and Light tab shapes — html[data-tab-style="chrome" | "light"].
+ * (Light is described further down.)
  *
  * The same ribbon as the plain classic strip (App.css) with the same sizes and
  * positions, drag handle included; only the highlights differ. The open tab is
@@ -38,27 +39,56 @@ html[data-tab-style='chrome'] .ribbon-settings-btn.active {
   border-radius: 12px;
 }
 
-/* ---- Classic and Chrome: an open pinned site shows a small light ----
-   It sits in the tab's outer bottom corner (the screen-edge side), so it never
-   collides with the selection bar or block. Binder tabs show this with their
-   outer stripe instead (binder.css). Unpinned tabs are always open, so they
-   need no light. */
-html:not([data-tab-style='binder']) .pinned-site-btn.open::after {
+/* ---- Classic and Chrome: an open pinned site has a dot under its icon ----
+   A plain dot, centred directly below the icon. Binder tabs show this with
+   their outer stripe instead (binder.css). Unpinned tabs are always open, so
+   they need no dot. */
+html:is([data-tab-style='classic'], [data-tab-style='chrome']) .pinned-site-btn.open::after {
   content: '';
   position: absolute;
-  bottom: 5px;
-  width: 5px;
-  height: 5px;
+  left: 50%;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--text-primary) 80%, transparent);
-  box-shadow: 0 0 4px 1px color-mix(in srgb, var(--text-primary) 35%, transparent);
+  background: var(--text-secondary);
+  transform: translateX(-50%);
   pointer-events: none;
 }
 
-html:not([data-tab-style='binder']) [data-side='right'] .pinned-site-btn.open::after {
+/* ---- Light: the corner light does all the work ----
+   The same layout as Classic with no selection bar or block. A light in the
+   tab's outer bottom corner (the screen-edge side) says everything: there
+   means open, the accent colour means it is the page showing in the pane,
+   and no light means closed. Unpinned tabs are always open. */
+html[data-tab-style='light'] .app-layout[data-side] :is(.tab-item, .pinned-site-btn).active::before {
+  content: none;
+}
+
+html[data-tab-style='light'] .tab-item.active,
+html[data-tab-style='light'] .pinned-site-btn.active {
+  background: transparent;
+}
+
+html[data-tab-style='light'] :is(.tab-item, .pinned-site-btn.open)::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  pointer-events: none;
+}
+
+html[data-tab-style='light'] :is(.tab-item, .pinned-site-btn).active::after {
+  background: var(--accent);
+}
+
+html[data-tab-style='light'] [data-side='right'] :is(.tab-item, .pinned-site-btn)::after {
   right: 5px;
 }
 
-html:not([data-tab-style='binder']) [data-side='left'] .pinned-site-btn.open::after {
+html[data-tab-style='light'] [data-side='left'] :is(.tab-item, .pinned-site-btn)::after {
   left: 5px;
 }

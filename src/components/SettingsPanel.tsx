@@ -41,15 +41,19 @@ const BINDER_LABEL: Record<BinderShapeId, string> = {
   'cove-square': 'Square cove',
 }
 
+type BasicStyle = 'classic' | 'chrome' | 'light'
+const BASIC_LABEL: Record<BasicStyle, string> = { classic: 'Classic', chrome: 'Chrome', light: 'Light' }
+
 /** A miniature ribbon in a flat tab shape, drawn in the current theme's colours. */
-function TabStylePreview({ style }: { style: 'classic' | 'chrome' }) {
-  // The middle tab is selected; it and the top one are open and show their lights.
+function TabStylePreview({ style }: { style: BasicStyle }) {
+  // The middle tab is selected; it and the top one are open; the bottom one is closed.
   const tab = (y: number, active: boolean, open: boolean) => (
     <g key={y}>
       {active && style === 'classic' && <rect x="0" y={y + 6} width="3" height="16" rx="1.5" fill="var(--accent)" />}
       {active && style === 'chrome' && <rect x="4" y={y + 2} width="26" height="24" rx="8" fill="var(--bg-active)" />}
       <circle cx="17" cy={y + 14} r="5" fill="var(--text-secondary)" />
-      {open && <circle cx="28" cy={y + 24} r="1.6" fill="var(--text-primary)" />}
+      {open && style !== 'light' && <circle cx="17" cy={y + 24} r="1.3" fill="var(--text-secondary)" />}
+      {open && style === 'light' && <circle cx="28" cy={y + 24} r="1.8" fill={active ? 'var(--accent)' : 'var(--text-secondary)'} />}
     </g>
   )
   return (
@@ -237,11 +241,11 @@ function AppearancePage() {
       <section className="customizer-group">
         <h3>Tab shape</h3>
         <Subsection title="Basic" open={open.basic} onToggle={() => setOpen(o => ({ ...o, basic: !o.basic }))}>
-          {(['classic', 'chrome'] as const).map(id => (
+          {(['classic', 'chrome', 'light'] as const).map(id => (
             <Choice
               key={id}
               selected={appearance.tabStyle === id}
-              label={id === 'classic' ? 'Classic' : 'Chrome'}
+              label={BASIC_LABEL[id]}
               onSelect={() => update({ tabStyle: id })}
             >
               <span className="tab-style-frame" data-theme={appearance.theme}><TabStylePreview style={id} /></span>

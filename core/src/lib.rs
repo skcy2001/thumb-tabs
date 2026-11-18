@@ -85,7 +85,7 @@ fn string_id<'de, D: serde::Deserializer<'de>>(d: D) -> Result<String, D::Error>
 pub const THEMES: &[&str] = &[
     "cocoa", "midnight", "graphite", "forest", "lagoon", "sunset", "dracula", "contrast",
 ];
-pub const TAB_STYLES: &[&str] = &["binder", "classic", "chrome"];
+pub const TAB_STYLES: &[&str] = &["binder", "classic", "chrome", "light"];
 pub const BINDER_SHAPES: &[&str] = &[
     "wave", "chamfer", "rounded", "cove", "trapezoid",
     "wave-square", "chamfer-square", "rounded-square", "cove-square",

@@ -197,7 +197,7 @@ dependencies = [
 
 [[package]]
 name = "tabbar-core"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "serde",
  "url",

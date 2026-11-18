@@ -231,7 +231,8 @@ test('settings opens from the ribbon button; appearance picks theme, tab shape a
   await panel.getByRole('button',{name:/Appearance/}).click()
   await expect(page.locator('.url-text')).toHaveText('thumb-tabs://settings/appearance')
   await expect(panel.locator('.customizer-hint, .choice-desc')).toHaveCount(0)
-  await expect(panel.getByRole('radio',{name:'Light'})).toHaveCount(0)
+  // The old Light theme is gone (Light is now a tab shape).
+  await expect(panel.getByRole('radiogroup',{name:'Theme'}).getByRole('radio',{name:'Light'})).toHaveCount(0)
   await expect(panel.getByRole('radio',{name:'Pill'})).toHaveCount(0)
   await expect(panel.getByRole('radiogroup',{name:'Theme'}).getByRole('radio')).toHaveText(['Cocoa','Midnight','Graphite','Forest','Lagoon','Sunset','Dracula','High contrast'])
   // Tab shape has two expandable subsections, both open to start with.
@@ -438,7 +439,7 @@ test('every tab shape and theme renders in the ribbon with its drag handle',asyn
   await page.setViewportSize({width:53,height:420})
   const looks=[
     ...['wave','chamfer','rounded','cove','trapezoid','wave-square','chamfer-square','rounded-square','cove-square'].map(binderShape=>({tabStyle:'binder',binderShape})),
-    {tabStyle:'classic',binderShape:'wave'},{tabStyle:'chrome',binderShape:'wave'},
+    {tabStyle:'classic',binderShape:'wave'},{tabStyle:'chrome',binderShape:'wave'},{tabStyle:'light',binderShape:'wave'},
   ]
   for (const side of ['right','left']) for (const look of looks) for (const theme of ['cocoa','midnight']) {
     await page.evaluate(({side,look,theme})=>{const s=structuredClone(window.testHost.state);s.settings.side=side;s.settings.appearance={theme,...look};return window.testHost.update(s)},{side,look,theme})
@@ -456,7 +457,7 @@ test('the ribbon drag handle is always shown, in a light version of the ribbon c
   const errors=await mount(page,'ribbon')
   await page.setViewportSize({width:53,height:420})
   const handle=page.getByRole('button',{name:'Move Tabbar to screen edge'})
-  for (const tabStyle of ['binder','classic','chrome']) {
+  for (const tabStyle of ['binder','classic','chrome','light']) {
     await page.evaluate(t=>{const s=structuredClone(window.testHost.state);s.settings.appearance={theme:'midnight',tabStyle:t,binderShape:'wave'};return window.testHost.update(s)},tabStyle)
     await page.mouse.move(400,400)
     const look=()=>handle.evaluate(h=>{
@@ -469,25 +470,44 @@ test('the ribbon drag handle is always shown, in a light version of the ribbon c
   }
   expect(errors).toEqual([])
 })
-test('classic and chrome pins that are open show a light in the outer bottom corner',async({page})=>{
+test('classic and chrome pins that are open have a plain dot right under the icon',async({page})=>{
   const errors=await mount(page,'ribbon')
   await page.setViewportSize({width:53,height:420})
   await page.evaluate(()=>{const s=structuredClone(window.testHost.state);s.settings.pins.push({id:'site-c',title:'Closed pin',url:'https://example.net/'});s.active=2;return window.testHost.update(s)})
-  const light=name=>page.getByRole('button',{name,exact:true}).evaluate(b=>{
-    const dot=getComputedStyle(b,'::after'),box=b.getBoundingClientRect()
-    return {content:dot.content,right:box.right-b.getBoundingClientRect().left-parseFloat(dot.left||'0'),cssRight:dot.right,cssLeft:dot.left,bottom:dot.bottom}
+  const dot=name=>page.getByRole('button',{name,exact:true}).evaluate(b=>{
+    const d=getComputedStyle(b,'::after'),box=b.getBoundingClientRect(),icon=b.querySelector('.tab-icon').getBoundingClientRect()
+    return {content:d.content,shadow:d.boxShadow,centre:box.left+parseFloat(d.left),iconCentre:icon.left+icon.width/2,iconBottom:icon.bottom,top:box.bottom-parseFloat(d.bottom)-parseFloat(d.height)}
   })
   for (const side of ['right','left']) for (const tabStyle of ['classic','chrome','binder']) {
     await page.evaluate(({side,tabStyle})=>{const s=structuredClone(window.testHost.state);s.settings.side=side;s.settings.appearance={theme:'cocoa',tabStyle,binderShape:'wave'};return window.testHost.update(s)},{side,tabStyle})
     await expect(page.locator('html')).toHaveAttribute('data-tab-style',tabStyle)
-    const open=await light('Example pin'), closed=await light('Closed pin')
+    const open=await dot('Example pin'), closed=await dot('Closed pin')
     expect(closed.content,`${tabStyle} closed`).toBe('none')
     if (tabStyle==='binder') { expect(open.content,'binder open').toBe('none'); continue }
     expect(open.content,`${tabStyle} open`).not.toBe('none')
-    expect(open.bottom).toBe('5px')
-    // Outer side: the screen edge the ribbon is docked to.
-    expect(side==='right'?open.cssRight:open.cssLeft,`${tabStyle} ${side}`).toBe('5px')
+    expect(open.shadow,`${tabStyle} no glow`).toBe('none')
+    expect(Math.abs(open.centre-open.iconCentre),`${tabStyle} ${side} centred`).toBeLessThan(1)
+    expect(open.top,`${tabStyle} below the icon`).toBeGreaterThanOrEqual(open.iconBottom)
   }
+  expect(errors).toEqual([])
+})
+test('the Light style shows state only with a corner light: there, accent, or gone',async({page})=>{
+  const errors=await mount(page,'ribbon')
+  await page.setViewportSize({width:53,height:420})
+  await page.evaluate(()=>{const s=structuredClone(window.testHost.state);s.settings.pins.push({id:'site-c',title:'Closed pin',url:'https://example.net/'});s.settings.appearance={theme:'cocoa',tabStyle:'light',binderShape:'wave'};return window.testHost.update(s)})
+  await expect(page.locator('html')).toHaveAttribute('data-tab-style','light')
+  const look=sel=>page.locator(sel).first().evaluate(b=>{const d=getComputedStyle(b,'::after'),bar=getComputedStyle(b,'::before');return {content:d.content,colour:d.backgroundColor,right:d.right,bar:bar.content,bg:getComputedStyle(b).backgroundColor}})
+  const accent=await page.evaluate(()=>{const p=document.createElement('div');p.style.color='var(--accent)';document.body.append(p);const c=getComputedStyle(p).color;p.remove();return c})
+  // The selected pin: accent light, no bar, no block.
+  await page.mouse.move(400,400)
+  await expect.poll(async()=>(await look('.pinned-site-btn.active')).bg).toBe('rgba(0, 0, 0, 0)')
+  const selected=await look('.pinned-site-btn.active')
+  expect(selected.content).not.toBe('none'); expect(selected.colour).toBe(accent); expect(selected.right).toBe('5px')
+  expect(selected.bar).toBe('none')
+  // An open tab in the background: a plain light. A closed pin: none.
+  const open=await look('.tab-item:not(.active)')
+  expect(open.content).not.toBe('none'); expect(open.colour).not.toBe(accent)
+  expect((await look('.pinned-site-btn:not(.open)')).content).toBe('none')
   expect(errors).toEqual([])
 })
 test('every theme styles the ribbon, and the settings button is always the accent colour',async({page})=>{

@@ -1,6 +1,6 @@
 [package]
 name = "tabbar"
-version = "0.2.0"
+version = "0.2.1"
 description = "Tabbar docked browser using the system webview"
 authors = ["samya"]
 license = "MIT"

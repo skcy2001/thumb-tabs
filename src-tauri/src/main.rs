@@ -132,6 +132,8 @@ fn launch_view(app: &AppHandle, id: u64) -> Result<()> {
     .disable_drag_drop_handler()
     .focused(false)
     .initialization_script(include_str!("scripts/page.js"))
+    // Routes service-worker notifications through the app (see the script).
+    .initialization_script_for_all_frames(include_str!("scripts/notifications.js"))
     .on_navigation(move |url| {
         if !model::is_web_url(url.as_str()) {
             return false;

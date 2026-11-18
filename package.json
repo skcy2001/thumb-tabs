@@ -1,6 +1,6 @@
 {
   "name": "thumb-tabs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "Thumb Tabs: a docked browser ribbon for Windows, built on Tauri 2 and WebView2",
