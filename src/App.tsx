@@ -16,6 +16,7 @@ import './binder.css'
 import './tabstyles.css'
 import './customizer.css'
 import './settings.css'
+import './backgrounds.css'
 
 export type ShellRole = 'ribbon' | 'pane' | 'player' | 'edge' | 'downloads'
 

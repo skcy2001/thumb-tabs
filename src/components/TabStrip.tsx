@@ -559,11 +559,15 @@ export function TabStrip({
 
       <button
         type="button"
-        className={`ribbon-settings-btn ${settingsOpen ? 'active' : ''}`}
+        className={`ribbon-settings-btn ${settingsOpen && !collapsed ? 'active' : ''}`}
         title="Settings"
         aria-label="Settings"
         aria-pressed={settingsOpen}
-        onClick={() => window.sidebarApi?.shell.openSettings()}
+        // Like a selected tab: a second click, while Settings shows, collapses the pane.
+        onClick={() => {
+          if (settingsOpen && !collapsed) window.sidebarApi?.tabs.dispatch({ type: 'toggleCollapsed' })
+          else window.sidebarApi?.shell.openSettings()
+        }}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M8.4 2.5h3.2l.5 2 1.4.8 2-.6 1.6 2.8-1.5 1.4v1.6l1.5 1.4-1.6 2.8-2-.6-1.4.8-.5 2H8.4l-.5-2-1.4-.8-2 .6-1.6-2.8L4.4 10.9V9.3L2.9 7.9l1.6-2.8 2 .6 1.4-.8Z" />

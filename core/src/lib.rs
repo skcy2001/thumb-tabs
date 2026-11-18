@@ -88,7 +88,9 @@ pub const THEMES: &[&str] = &[
 pub const TAB_STYLES: &[&str] = &["binder", "classic", "chrome"];
 pub const BINDER_SHAPES: &[&str] = &[
     "wave", "chamfer", "rounded", "cove", "trapezoid",
+    "wave-square", "chamfer-square", "rounded-square", "cove-square",
 ];
+pub const BACKGROUNDS: &[&str] = &["solid", "transparent", "sand"];
 
 /// How the shell looks. Each field names a style the UI defines; anything
 /// else (a newer build's choice, a hand-edited file) falls back to the default.
@@ -99,6 +101,11 @@ pub struct Appearance {
     pub theme: String,
     pub tab_style: String,
     pub binder_shape: String,
+    pub background: String,
+    /// How see-through the Transparent background is, 0 to 1.
+    pub transparency: f64,
+    /// How bright the Glitter sand glitter is, 0 to 1.
+    pub glitter: f64,
 }
 
 impl Default for Appearance {
@@ -107,6 +114,9 @@ impl Default for Appearance {
             theme: THEMES[0].into(),
             tab_style: TAB_STYLES[0].into(),
             binder_shape: BINDER_SHAPES[0].into(),
+            background: BACKGROUNDS[0].into(),
+            transparency: 0.2,
+            glitter: 0.5,
         }
     }
 }
@@ -123,6 +133,15 @@ impl Appearance {
         if !BINDER_SHAPES.contains(&self.binder_shape.as_str()) {
             self.binder_shape = default.binder_shape;
         }
+        if !BACKGROUNDS.contains(&self.background.as_str()) {
+            self.background = default.background;
+        }
+        for (value, fallback) in [
+            (&mut self.transparency, default.transparency),
+            (&mut self.glitter, default.glitter),
+        ] {
+            *value = if value.is_finite() { value.clamp(0., 1.) } else { fallback };
+        }
     }
 }
 
@@ -131,6 +150,8 @@ impl Appearance {
 pub struct Settings {
     pub side: Side,
     pub pane_width: f64,
+    /// The pane's width while Settings is showing; none until it is resized there.
+    pub settings_width: Option<f64>,
     pub pins: Vec<Pin>,
     pub pinned: bool,
     /// Keep the open page expanded when focus moves elsewhere.
@@ -146,6 +167,7 @@ impl Default for Settings {
         Self {
             side: Side::Right,
             pane_width: 364.0,
+            settings_width: None,
             pins: vec![],
             pinned: false,
             keep_open: false,
@@ -160,6 +182,7 @@ impl Default for Settings {
 impl Settings {
     pub fn sanitize(&mut self) {
         self.pane_width = clamp_width(self.pane_width);
+        self.settings_width = self.settings_width.map(clamp_width);
         self.appearance.sanitize();
         let mut ids = std::collections::HashSet::new();
         self.pins
@@ -469,6 +492,7 @@ mod tests {
     fn persisted_values_are_bounded_and_pins_validated() {
         let mut settings = Settings {
             pane_width: f64::NAN,
+            settings_width: Some(5000.0),
             ..Settings::default()
         };
         settings.pins = vec![
@@ -503,6 +527,7 @@ mod tests {
         settings.sanitize();
         assert_eq!(settings.pins.len(), 1);
         assert_eq!(settings.pane_width, 364.0);
+        assert_eq!(settings.settings_width, Some(900.0));
         assert_eq!(clamp_width(9999.0), 900.0);
     }
 
@@ -527,6 +552,31 @@ mod tests {
         settings.appearance.theme = "neon".into();
         settings.sanitize();
         assert_eq!(settings.appearance, Appearance::default());
+    }
+
+    #[test]
+    fn appearance_background_keeps_known_values_and_defaults_to_solid() {
+        let mut settings = Settings::default();
+        settings.appearance.background = "sand".into();
+        settings.appearance.binder_shape = "cove-square".into();
+        settings.sanitize();
+        assert_eq!(settings.appearance.background, "sand");
+        assert_eq!(settings.appearance.binder_shape, "cove-square");
+        settings.appearance.background = "plaid".into();
+        settings.sanitize();
+        assert_eq!(settings.appearance.background, "solid");
+        // A file saved before backgrounds existed has none (serde default).
+        assert_eq!(Appearance::default().background, "solid");
+        // Amounts are kept between 0 and 1; a broken one gets its default.
+        settings.appearance.transparency = 3.;
+        settings.appearance.glitter = f64::NAN;
+        settings.sanitize();
+        assert_eq!(settings.appearance.transparency, 1.);
+        assert_eq!(settings.appearance.glitter, 0.5);
+        // Frosted was removed; a file that chose it falls back to Solid.
+        settings.appearance.background = "frosted".into();
+        settings.sanitize();
+        assert_eq!(settings.appearance.background, "solid");
     }
 
     #[test]

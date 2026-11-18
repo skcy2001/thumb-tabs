@@ -1,9 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="35 29.5 345 345" width="1024" height="1024">
-  <!-- Thumbtab logo: traced from the reference sketch (tile 345x334, corner radius 43). -->
+  <!-- Thumbtab logo (tile 345x334, corner radius 43): the page edge as a bar,
+       with one divider tab in the ribbon's Wave shape (src/binderShapes.ts),
+       docked left. From the page edge (x=136) the tab sweeps out in a curve,
+       its top and bottom slope in toward the outer edge, and the outer
+       corners are rounded. Flare 16, slant 14, corner 12, width 63. -->
   <defs><clipPath id="tile"><rect x="35" y="35" width="345" height="334" rx="43"/></clipPath></defs>
   <g clip-path="url(#tile)">
     <rect x="35" y="35" width="345" height="334" fill="#543e3a"/>
-    <path fill="#e8a3f3" d="M84 98 H131 A5 5 0 0 0 136 93 H140 V172 H136 A5 5 0 0 0 131 167 H84 Q73 167 73 156 V109 Q73 98 84 98 Z"/>
+    <path fill="#e8a3f3" d="M142 76.5 H136 Q136 87.7 120 92.5 L85 102.9 Q73 106.5 73 118.5 V146.5 Q73 158.5 85 162.1 L120 172.5 Q136 177.3 136 188.5 H142 Z"/>
     <rect x="136" y="35" width="70" height="334" fill="#e8a3f3"/>
   </g>
 </svg>

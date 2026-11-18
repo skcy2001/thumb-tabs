@@ -76,6 +76,8 @@ export interface SidebarApi {
     reorderPinned: (fromSiteId: string, toSiteId: string, before?: boolean) => void
     /** Hands the active tab's URL to the OS browser (http/https only). */
     openActiveInDefaultBrowser: () => void
+    /** Opens a web address in the default browser (Settings > About links). */
+    openLink?: (url: string) => void
     /** Pins an open tab to the ribbon. */
     pin: (tabId: number) => void
     /** Removes a pinned site, returning its tab to the unpinned list. */

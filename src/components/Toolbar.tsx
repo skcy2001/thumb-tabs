@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import type { DownloadInfo, TabInfo } from '../../shared/types'
 import { TOOLBAR_BUTTONS, useToolbarButtons, type ToolbarButtonDef, type ToolbarButtonId, type ToolbarMode, type ToolbarModes } from './toolbarButtons'
 
-import { SettingsPanel } from './SettingsPanel'
+import { SettingsPanel, settingsUrl, parseSettingsUrl, type SettingsPage } from './SettingsPanel'
 
 const HOME_URL = 'https://www.google.com/'
 
@@ -32,13 +32,20 @@ export function Toolbar({
   const [panel, setPanel] = useState<null | 'customize' | 'settings'>(null)
   const customizing = panel === 'customize'
   const setCustomizing = (open: boolean) => setPanel(open ? 'customize' : null)
+  // Settings is a page of its own (thumb-tabs://settings): while it is open the
+  // toolbar shows its title and address instead of the active tab's.
+  const settingsOpen = panel === 'settings'
+  const [settingsPage, setSettingsPage] = useState<SettingsPage>('menu')
+  // Settings reopens where you left it unless an address names a page.
+  const openSettings = (page?: SettingsPage) => { if (page) setSettingsPage(page); setPanel('settings') }
+  const pageUrl = settingsOpen ? settingsUrl(settingsPage) : activeTab?.url
   const urlRef = useRef<string | undefined>(undefined)
-  urlRef.current = activeTab?.url
+  urlRef.current = pageUrl
 
   // Commands from the native toolbar menu that the page carries out itself.
   useEffect(() => window.sidebarApi?.tabs.onToolbarCommand?.(command => {
     if (command === 'customize') setPanel('customize')
-    if (command === 'settings') setPanel('settings')
+    if (command === 'settings') openSettings()
     if (command === 'closePanel') setPanel(null)
     if (command === 'copyLink' && urlRef.current) {
       void navigator.clipboard?.writeText(urlRef.current).catch(() => {})
@@ -47,15 +54,18 @@ export function Toolbar({
   const { modes, setMode, reset } = useToolbarButtons()
 
   // The native page view sits over the pane below the toolbar; step it aside
-  // while the customize or settings panel uses that space.
+  // while the customize panel or the settings page uses that space.
+  // Collapsing closes the customizer; Settings, like any page, is still there
+  // when the pane comes back.
   useEffect(() => {
-    if (collapsed) setPanel(null)
+    if (collapsed) setPanel(p => (p === 'customize' ? null : p))
   }, [collapsed])
   const panelOpen = panel !== null
   useEffect(() => {
     window.sidebarApi?.tabs.setPageHidden?.(panelOpen)
     if (!panelOpen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPanel(null) }
+    // Escape closes the customizer; Settings is a page and stays until you leave it.
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPanel(p => (p === 'customize' ? null : p)) }
     window.addEventListener('keydown', onKey)
     return () => {
       window.removeEventListener('keydown', onKey)
@@ -64,7 +74,6 @@ export function Toolbar({
   }, [panelOpen])
 
   // Tells the ribbon, whose Settings button acts like a tab, when it is open.
-  const settingsOpen = panel === 'settings'
   const settingsReported = useRef(false)
   useEffect(() => {
     if (settingsReported.current === settingsOpen) return
@@ -82,12 +91,12 @@ export function Toolbar({
   const lastAppliedFocusRequest = useRef(0)
 
   useEffect(() => {
-    if (!editing) setInputVal(activeTab?.url ?? '')
-  }, [activeTab?.url, editing])
+    if (!editing) setInputVal(pageUrl ?? '')
+  }, [pageUrl, editing])
 
   useEffect(() => {
     setEditing(false)
-    setInputVal(activeTab?.url ?? '')
+    setInputVal(pageUrl ?? '')
   }, [activeTab?.id])
 
   useEffect(() => {
@@ -122,27 +131,34 @@ export function Toolbar({
     // due to the new activeTab swapping in.
     if (collapsed) {
       setEditing(false)
-      setInputVal(activeTab?.url ?? '')
+      setInputVal(pageUrl ?? '')
       return
     }
     if (pendingFocus.current) return
     if (lastAppliedFocusRequest.current === focusRequest && editing) return
     // When active tab changes via normal clicks, exit editing mode.
     setEditing(false)
-    setInputVal(activeTab?.url ?? '')
+    setInputVal(pageUrl ?? '')
   }, [activeTab?.id])
 
   const commit = () => {
     setEditing(false)
-    if (inputVal.trim()) onNavigate(inputVal.trim())
+    const target = inputVal.trim()
+    if (!target || target === pageUrl) return
+    const page = parseSettingsUrl(target)
+    if (page) return openSettings(page)
+    // Any other address leaves Settings for the tab it navigates.
+    if (settingsOpen) setPanel(null)
+    onNavigate(target)
   }
+  const leaveSettings = () => setPanel(null)
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') commit()
-    if (e.key === 'Escape') { setEditing(false); setInputVal(activeTab?.url ?? '') }
+    if (e.key === 'Escape') { setEditing(false); setInputVal(pageUrl ?? '') }
   }
 
-  const title = activeTab?.title?.trim() || displayUrl(activeTab?.url)
+  const title = settingsOpen ? 'Settings' : activeTab?.title?.trim() || displayUrl(activeTab?.url)
   const activeDownloads = downloads.filter(d => d.state === 'progressing' || d.state === 'paused')
   const downloadProgress = overallProgress(activeDownloads)
 
@@ -172,13 +188,16 @@ export function Toolbar({
   const renderButton = (b: ToolbarButtonDef) => {
     switch (b.id) {
       case 'back':
-        return <button key={b.id} className="toolbar-btn" disabled={!activeTab?.canGoBack} onClick={onBack} title="Back" aria-label="Go back">{b.icon}</button>
+        // On Settings, Back steps up a level, then returns to the tab.
+        return settingsOpen
+          ? <button key={b.id} className="toolbar-btn" onClick={() => (settingsPage === 'menu' ? leaveSettings() : setSettingsPage('menu'))} title="Back" aria-label="Go back">{b.icon}</button>
+          : <button key={b.id} className="toolbar-btn" disabled={!activeTab?.canGoBack} onClick={onBack} title="Back" aria-label="Go back">{b.icon}</button>
       case 'forward':
-        return <button key={b.id} className="toolbar-btn" disabled={!activeTab?.canGoForward} onClick={onForward} title="Forward" aria-label="Go forward">{b.icon}</button>
+        return <button key={b.id} className="toolbar-btn" disabled={settingsOpen || !activeTab?.canGoForward} onClick={onForward} title="Forward" aria-label="Go forward">{b.icon}</button>
       case 'reload':
-        return <button key={b.id} className="toolbar-btn" onClick={onReload} title="Reload" aria-label="Reload">{b.icon}</button>
+        return <button key={b.id} className="toolbar-btn" disabled={settingsOpen} onClick={onReload} title="Reload" aria-label="Reload">{b.icon}</button>
       case 'home':
-        return <button key={b.id} className="toolbar-btn" onClick={() => onNavigate(HOME_URL)} title="Home" aria-label="Home">{b.icon}</button>
+        return <button key={b.id} className="toolbar-btn" onClick={() => { leaveSettings(); onNavigate(HOME_URL) }} title="Home" aria-label="Home">{b.icon}</button>
       case 'keepOpen':
         return (
           <button key={b.id} className={`toolbar-btn keep-open-btn ${keepOpen ? 'active' : ''}`}
@@ -208,17 +227,18 @@ export function Toolbar({
           </button>
         )
       case 'copyLink':
-        return <button key={b.id} className="toolbar-btn" disabled={!activeTab?.url}
-          onClick={() => { if (activeTab?.url) void navigator.clipboard?.writeText(activeTab.url).catch(() => {}) }}
+        return <button key={b.id} className="toolbar-btn" disabled={!pageUrl}
+          onClick={() => { if (pageUrl) void navigator.clipboard?.writeText(pageUrl).catch(() => {}) }}
           title="Copy link" aria-label="Copy link">{b.icon}</button>
       case 'newTab':
-        return <button key={b.id} className="toolbar-btn" onClick={() => api?.dispatch({ type: 'create' })} title="New tab" aria-label="New tab">{b.icon}</button>
+        return <button key={b.id} className="toolbar-btn" onClick={() => { leaveSettings(); api?.dispatch({ type: 'create' }) }} title="New tab" aria-label="New tab">{b.icon}</button>
       case 'closeTab':
-        return <button key={b.id} className="toolbar-btn" disabled={!activeTab}
-          onClick={() => { if (activeTab) api?.dispatch({ type: 'close', id: activeTab.id }) }}
+        // On Settings, Close tab closes the Settings page.
+        return <button key={b.id} className="toolbar-btn" disabled={!settingsOpen && !activeTab}
+          onClick={() => { if (settingsOpen) leaveSettings(); else if (activeTab) api?.dispatch({ type: 'close', id: activeTab.id }) }}
           title="Close tab" aria-label="Close tab">{b.icon}</button>
       case 'openExternal':
-        return <button key={b.id} className="toolbar-btn open-external-btn" disabled={!isWebUrl(activeTab?.url)}
+        return <button key={b.id} className="toolbar-btn open-external-btn" disabled={!isWebUrl(pageUrl)}
           onClick={() => api?.openActiveInDefaultBrowser()}
           title="Open in default browser" aria-label="Open in default browser">{b.icon}</button>
     }
@@ -263,13 +283,13 @@ export function Toolbar({
                 <button
                   className="url-display"
                   onClick={() => {
-                    setInputVal(activeTab?.url ?? '')
+                    setInputVal(pageUrl ?? '')
                     setEditing(true)
                     setTimeout(() => inputRef.current?.select(), 10)
                   }}
-                  title={activeTab?.url}
+                  title={pageUrl}
                 >
-                  <span className="url-text">{displayUrl(activeTab?.url)}</span>
+                  <span className="url-text">{settingsOpen ? pageUrl : displayUrl(pageUrl)}</span>
                 </button>
               )}
             </div>
@@ -284,7 +304,7 @@ export function Toolbar({
           {customizing && (
             <ToolbarCustomizer modes={modes} onChange={setMode} onReset={reset} onClose={() => setCustomizing(false)} />
           )}
-          {panel === 'settings' && <SettingsPanel onClose={() => setPanel(null)} />}
+          {settingsOpen && <SettingsPanel page={settingsPage} onPageChange={setSettingsPage} />}
         </>
       )}
     </div>

@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { SidebarApi } from '../shared/api'
 import {
-  BINDER_SHAPES, DEFAULT_APPEARANCE, TAB_STYLES, THEMES,
+  BACKGROUNDS, BINDER_SHAPES, DEFAULT_APPEARANCE, TAB_STYLES, THEMES,
   type Appearance, type DownloadInfo, type PinnedSiteInfo, type Side, type TabInfo,
 } from '../shared/types'
 import { binderShape } from './binderShapes'
@@ -18,6 +18,10 @@ interface State {
 }
 const subscribers = new Set<(state: State) => void>()
 let cached: State | undefined
+/** A saved amount between 0 and 1, or the default when it is missing or broken. */
+function amount(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : fallback
+}
 /** The saved look, with anything this build does not know replaced by the default. */
 function appearance(s: State): Appearance {
   const saved = s.settings.appearance
@@ -25,6 +29,9 @@ function appearance(s: State): Appearance {
     theme: THEMES.find(t => t === saved?.theme) ?? DEFAULT_APPEARANCE.theme,
     tabStyle: TAB_STYLES.find(t => t === saved?.tabStyle) ?? DEFAULT_APPEARANCE.tabStyle,
     binderShape: BINDER_SHAPES.find(t => t === saved?.binderShape) ?? DEFAULT_APPEARANCE.binderShape,
+    background: BACKGROUNDS.find(t => t === saved?.background) ?? DEFAULT_APPEARANCE.background,
+    transparency: amount(saved?.transparency, DEFAULT_APPEARANCE.transparency),
+    glitter: amount(saved?.glitter, DEFAULT_APPEARANCE.glitter),
   }
 }
 /** Styles the whole window from the look; the CSS reads these attributes and variables. */
@@ -33,6 +40,9 @@ function applyAppearance(look: Appearance) {
   root.dataset.theme = look.theme
   root.dataset.tabStyle = look.tabStyle
   root.dataset.binderShape = look.binderShape
+  root.dataset.background = look.background
+  root.style.setProperty('--transparency', String(look.transparency))
+  root.style.setProperty('--glitter', String(look.glitter))
   root.style.setProperty('--binder-shape-right', binderShape(look.binderShape, 'right'))
   root.style.setProperty('--binder-shape-left', binderShape(look.binderShape, 'left'))
 }
@@ -82,13 +92,13 @@ const api: SidebarApi = {
     onChange: cb => {
       let last = ''
       return subscribe(appearance, look => {
-        const key = `${look.theme}/${look.tabStyle}/${look.binderShape}`
+        const key = JSON.stringify(look)
         if (key === last) return
         last = key
         cb(look)
       })
     },
-    set: look => act('setAppearance', { theme: look.theme, tabStyle: look.tabStyle, binderShape: look.binderShape }),
+    set: look => act('setAppearance', { ...look }),
   },
   shell: {
     commitPlacement: (x, y) => act('placement', { x, y }),
@@ -132,6 +142,7 @@ const api: SidebarApi = {
     toggleMute: id => query('mute', id),
     reorderPinned: (fromSiteId, toSiteId, before = true) => act('reorderPins', { fromSiteId, toSiteId, before }),
     openActiveInDefaultBrowser: () => act('openExternal'),
+    openLink: url => act('openLink', { url }),
     pin: id => act('pin', { id }),
     unpin: siteId => act('unpin', { siteId }),
     toggleFullscreen: () => act('fullscreen'),

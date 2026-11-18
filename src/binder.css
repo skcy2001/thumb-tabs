@@ -4,9 +4,9 @@
  * The ribbon reads as the protruding edge of a ring binder: every tab is a
  * coloured paper divider, one shape that curves out of the page edge, with
  * slanted top and bottom and rounded outer corners. The dividers overlap.
- * Unselected ones draw a thin line where they tuck behind the page; the
- * selected one is a deeper shade, has no line (it flows into the page), and
- * sits in front. The pane's toolbar picks up the same colour, like the top of
+ * Unselected ones are shaded where they tuck behind the page; the selected
+ * one is a deeper shade, unshaded (it flows into the page), and sits in
+ * front. The pane's toolbar picks up the same colour, like the top of
  * that divider page.
  *
  * "Inner" below means the edge facing the pane; "outer" faces the screen edge.
@@ -23,6 +23,7 @@ html[data-tab-style='binder'],
 .binder-swatch {
   --binder-base-h: 88px; /* a tab's height at the standard size */
   --binder-trim: 0px; /* how much shorter this shape's tabs are; see below */
+  --binder-logo-top: 12px; /* from the top of a tab's body to its logo */
   --binder-tab-h: calc(var(--binder-base-h) - var(--binder-trim));
   /* Each tab is inset by half the trim, top and bottom, so it keeps its centre
      and the tabs spread out by the full trim. */
@@ -38,15 +39,18 @@ html[data-tab-style='binder'],
      from the chosen shape. */
 }
 
-/* These shapes read as bulkier, so their tabs are 15% shorter. Declared after
-   the block above so it wins; --binder-tab-h is then worked out from it. */
-html[data-binder-shape='chamfer'],
-html[data-binder-shape='rounded'],
-html[data-binder-shape='cove'],
-.binder-swatch[data-shape='chamfer'],
-.binder-swatch[data-shape='rounded'],
-.binder-swatch[data-shape='cove'] {
+/* These shapes (and their -square variants) read as bulkier, so their tabs
+   are 15% shorter. Declared after the block above so it wins; --binder-tab-h
+   is then worked out from it. */
+html[data-binder-shape^='chamfer'],
+html[data-binder-shape^='rounded'],
+html[data-binder-shape^='cove'],
+.binder-swatch[data-shape^='chamfer'],
+.binder-swatch[data-shape^='rounded'],
+.binder-swatch[data-shape^='cove'] {
   --binder-trim: calc(var(--binder-base-h) * 0.15);
+  /* Their flat tops leave the logo looking low; it sits 20% nearer the top. */
+  --binder-logo-top: 9.6px;
 }
 
 /* ---- Ribbon backdrop: binder board, page edge drawn as a 1px line ---- */
@@ -87,7 +91,7 @@ html[data-tab-style='binder'] .pinned-site-list {
    Each curve leaves and joins the slanted edge along the same direction (a
    slope of about 0.3, the slant across a typical tab's width), so the outline
    has no kinks. The box is --binder-flare taller at top and bottom than the
-   visible body, to hold those curves. All shading (the page-edge line and
+   visible body, to hold those curves. All shading (the page-edge
    shadow, the outer stripe) is painted as background layers inside the shape,
    so it follows the silhouette. Tabs overlap; later ones paint over earlier
    ones, and the selected tab sits in front. */
@@ -95,17 +99,16 @@ html[data-tab-style='binder'] [data-side] .tab-item,
 html[data-tab-style='binder'] [data-side] .pinned-site-btn {
   --tab-bg: color-mix(in srgb, var(--divider, var(--accent)) 28%, var(--bg-strip));
   --tab-edge: color-mix(in srgb, var(--divider, var(--accent)) 75%, var(--bg-strip));
-  --page-line: var(--border);         /* tucked behind the page */
   --page-shadow: rgba(0, 0, 0, 0.4);
   --edge-dir: to right;               /* from the page edge outward */
   --outer-gap: var(--binder-reach);
   height: calc(var(--binder-tab-h) + 2 * var(--binder-flare));
   min-height: 0;
   flex-shrink: 0; /* scroll the strip rather than squash tabs when it is full */
-  /* Logo 16px below the body's top and 3px toward the page; the bottom
+  /* Logo --binder-logo-top below the body's top and 3px toward the page; the bottom
      padding keeps the grip clear of the next tab, which covers this tab's
      lowest --binder-overlap pixels. */
-  padding: calc(16px + var(--binder-flare)) 9px calc(var(--binder-overlap) + 4px + var(--binder-flare)) 3px;
+  padding: calc(var(--binder-logo-top) + var(--binder-flare)) 9px calc(var(--binder-overlap) + 4px + var(--binder-flare)) 3px;
   flex-direction: column;
   justify-content: flex-start;
   gap: 5px;
@@ -113,7 +116,6 @@ html[data-tab-style='binder'] [data-side] .pinned-site-btn {
   border-radius: 0 11px 11px 0;
   box-shadow: none;
   background:
-    linear-gradient(var(--edge-dir), var(--page-line) 1px, transparent 1px),
     linear-gradient(var(--edge-dir), var(--page-shadow), transparent 5px),
     /* Outer stripe, with a 2px fade into the tab. */
     linear-gradient(var(--edge-dir), transparent calc(100% - 5px), var(--tab-edge) calc(100% - 3px)),
@@ -125,7 +127,7 @@ html[data-tab-style='binder'] [data-side='left'] .tab-item,
 html[data-tab-style='binder'] [data-side='left'] .pinned-site-btn {
   --edge-dir: to left;
   margin: var(--binder-inset) 0 var(--binder-inset) var(--outer-gap);
-  padding: calc(16px + var(--binder-flare)) 3px calc(var(--binder-overlap) + 4px + var(--binder-flare)) 9px;
+  padding: calc(var(--binder-logo-top) + var(--binder-flare)) 3px calc(var(--binder-overlap) + 4px + var(--binder-flare)) 9px;
   border-radius: 11px 0 0 11px;
 }
 
@@ -194,7 +196,6 @@ html[data-tab-style='binder'] [data-side] .pinned-site-btn:hover .tab-icon {
 html[data-tab-style='binder'] [data-side] .tab-item.active,
 html[data-tab-style='binder'] [data-side] .pinned-site-btn.active {
   --tab-bg: color-mix(in srgb, var(--divider, var(--accent)) 50%, var(--bg-dark));
-  --page-line: transparent;
   --page-shadow: transparent;
   --outer-gap: 2px;
   z-index: 1;
@@ -251,6 +252,7 @@ html[data-tab-style='binder'] [data-side] .pinned-site-btn:hover .tab-grip {
   opacity: 1;
 }
 
+
 /* ---- Badges ring against the divider they sit on ---- */
 
 html[data-tab-style='binder'] [data-side] .tab-item .tab-unread-dot,
@@ -285,7 +287,6 @@ html[data-tab-style='binder'] [data-side] .tab-new-btn {
   border: 0;
   border-radius: 0 11px 11px 0;
   background:
-    linear-gradient(var(--edge-dir), var(--border) 1px, transparent 1px),
     linear-gradient(var(--edge-dir), rgba(0, 0, 0, 0.4), transparent 5px),
     var(--tab-bg);
   color: var(--accent);

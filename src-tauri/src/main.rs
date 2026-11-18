@@ -393,6 +393,7 @@ fn context_menu(app: &AppHandle, action: &Value) -> Result<()> {
         item(json!({"type":"closeAll"}), "Close all tabs")?;
         item(json!({"type":"fullscreen"}), "Toggle fullscreen")?;
         item(json!({"type":"downloadsPanel"}), "Downloads")?;
+        item(json!({"type":"openSettings"}), "Settings")?;
         item(json!({"type":"hide"}), "Hide to tray")?;
         item(json!({"type":"quit"}), "Quit")?;
     }
@@ -629,7 +630,13 @@ async fn apply(app: &AppHandle, a: Value) -> Result<()> {
         }
         "setWidth" => {
             let width = model::clamp_width(number(&a, "width")?);
+            // Resizing Settings sets its own width and leaves the tabs' alone.
+            let settings = shell::settings_open(app);
             edit(app, |b| {
+                if settings {
+                    b.state.settings.settings_width = Some(width);
+                    return;
+                }
                 b.state.settings.pane_width = width;
                 if let Some(t) = b
                     .state
@@ -751,12 +758,23 @@ async fn apply(app: &AppHandle, a: Value) -> Result<()> {
             return Ok(());
         }
         "openSettings" => {
+            // Settings takes the page's place: step the page view aside before
+            // the pane shows, so the last tab never flashes up first.
+            shell::set_page_hidden(app, true)?;
+            // Known before the pane shows, so it opens at Settings' own width.
+            shell::set_settings_open(app, true);
             edit(app, |b| b.state.collapsed = false);
             shell::show(app)?;
             let _ = app.emit_to("pane", "toolbar-command", "settings");
         }
         "settingsOpen" => {
-            let _ = app.emit_to("ribbon", "settings-open", a["open"].as_bool().unwrap_or(false));
+            let open = a["open"].as_bool().unwrap_or(false);
+            let _ = app.emit_to("ribbon", "settings-open", open);
+            // Opening or leaving Settings swaps to its width or the tab's.
+            if shell::settings_open(app) != open {
+                shell::set_settings_open(app, open);
+                shell::layout(app)?;
+            }
             return Ok(());
         }
         "setAppearance" => {
@@ -764,6 +782,10 @@ async fn apply(app: &AppHandle, a: Value) -> Result<()> {
                 theme: string(&a, "theme")?.into(),
                 tab_style: string(&a, "tabStyle")?.into(),
                 binder_shape: string(&a, "binderShape")?.into(),
+                // Older pages may not send these; sanitize then keeps the defaults.
+                background: a["background"].as_str().unwrap_or_default().into(),
+                transparency: a["transparency"].as_f64().unwrap_or(f64::NAN),
+                glitter: a["glitter"].as_f64().unwrap_or(f64::NAN),
             };
             appearance.sanitize();
             edit(app, |b| b.state.settings.appearance = appearance);
@@ -777,6 +799,15 @@ async fn apply(app: &AppHandle, a: Value) -> Result<()> {
                 string(&a, "choice")?,
             )
             .await?;
+        }
+        // A link from the app's own pages (Settings > About), in the default
+        // browser. Only web addresses.
+        "openLink" => {
+            let url = string(&a, "url")?;
+            if model::is_web_url(url) {
+                app.opener().open_url(url, None::<&str>).map_err(err)?;
+            }
+            return Ok(());
         }
         "openExternal" => {
             let url = active_view(app)?.url().map_err(err)?;
@@ -884,10 +915,15 @@ async fn apply(app: &AppHandle, a: Value) -> Result<()> {
         }
         _ => return Err("Unknown Tabbar action".into()),
     }
+    // Picking a tab, like opening Settings, replaces whatever panel or page
+    // (Settings) is open in the pane; its page view comes straight back.
+    let picks_tab = matches!(kind, "activate" | "launchPin" | "create" | "openTab" | "openUrl");
+    if picks_tab {
+        shell::set_page_hidden(app, false)?;
+        shell::set_settings_open(app, false);
+    }
     shell::layout(app)?;
-    // Picking a tab, like opening Settings, replaces whatever panel is open
-    // over the page.
-    if matches!(kind, "activate" | "launchPin" | "create" | "openTab" | "openUrl") {
+    if picks_tab {
         let _ = app.emit_to("pane", "toolbar-command", "closePanel");
     }
     if !snapshot(app).collapsed {

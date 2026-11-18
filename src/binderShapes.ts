@@ -9,9 +9,10 @@ import type { BinderShapeId, Side } from '../shared/types'
  * walk mirrored top to bottom, and a left dock mirrors it left to right, so
  * every shape works on both docks and the two halves cannot drift apart.
  *
- * Every shape starts with the same sweep out of the page edge (a flare of
- * --binder-flare), which is what lets neighbouring tabs overlap. The box is
- * that much taller than the visible body at top and bottom. The --binder-*
+ * Most shapes start with the same sweep out of the page edge (a flare of
+ * --binder-flare); the -square variants start with a right angle instead.
+ * Either way the box is that much taller than the visible body at top and
+ * bottom. The --binder-*
  * sizes are defined in binder.css.
  */
 
@@ -42,22 +43,38 @@ const slanted = (rise: string): Node[] => [
   curve(outer, `${F} + ${rise} + ${R}`, outer, `${F} + ${rise}`),
 ]
 
-const TOPS: Record<BinderShapeId, Node[]> = {
-  wave: slanted(S),
-  // Flat outer edge with its corners cut off.
-  chamfer: [line(beforeOuter('9px'), F), line(outer, `${F} + 9px`)],
-  rounded: roundedEnd(F, '12px'),
-  // Flat outer edge with small concave coves at the corners.
-  cove: [
-    line(beforeOuter('8px'), F),
-    curve(outer, `${F} + 8px`, beforeOuter('8px'), `${F} + 8px`),
-  ],
+/*
+ * The square variants drop the sweep: the body meets the page edge at a plain
+ * right angle. The box keeps its --binder-flare margin, so they stack and
+ * overlap exactly like their swept versions.
+ */
+const squareLead: Node[] = [line(at(0), F)]
+
+const wave = slanted(S)
+// Flat outer edge with its corners cut off.
+const chamfer = [line(beforeOuter('9px'), F), line(outer, `${F} + 9px`)]
+const rounded = roundedEnd(F, '12px')
+// Flat outer edge with small concave coves at the corners.
+const cove = [
+  line(beforeOuter('8px'), F),
+  curve(outer, `${F} + 8px`, beforeOuter('8px'), `${F} + 8px`),
+]
+
+const OUTLINES: Record<BinderShapeId, Node[]> = {
+  wave: [...lead, ...wave],
+  chamfer: [...lead, ...chamfer],
+  rounded: [...lead, ...rounded],
+  cove: [...lead, ...cove],
   // Sharp corners, sides sloping steeply in to a narrower outer edge.
-  trapezoid: [line(outer, `${F} + 20px`)],
+  trapezoid: [...lead, line(outer, `${F} + 20px`)],
+  'wave-square': [...squareLead, ...wave],
+  'chamfer-square': [...squareLead, ...chamfer],
+  'rounded-square': [...squareLead, ...rounded],
+  'cove-square': [...squareLead, ...cove],
 }
 
 export function binderShapeIds(): BinderShapeId[] {
-  return Object.keys(TOPS) as BinderShapeId[]
+  return Object.keys(OUTLINES) as BinderShapeId[]
 }
 
 /** The shape() value for a tab docked on `side`. */
@@ -68,7 +85,7 @@ export function binderShape(id: BinderShapeId, side: Side): string {
   const bottom = (y: string) => `calc(100% - (${y}))`
   const point = (x: X, y: string) => `${horizontal(x)} ${y}`
 
-  const nodes = [...lead, ...TOPS[id]]
+  const nodes = OUTLINES[id]
   const starts = [{ x: at(0), y: '0px' }, ...nodes]
   const start = side === 'right' ? '0% 0%' : '100% 0%'
   const command = (n: Node, y: (v: string) => string) =>

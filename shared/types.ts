@@ -80,17 +80,32 @@ export type ThemeId = (typeof THEMES)[number]
 export const TAB_STYLES = ['binder', 'classic', 'chrome'] as const
 export type TabStyleId = (typeof TAB_STYLES)[number]
 /** Outlines for the binder tab style; the others ignore it. */
-export const BINDER_SHAPES = ['wave', 'chamfer', 'rounded', 'cove', 'trapezoid'] as const
+export const BINDER_SHAPES = [
+  'wave', 'chamfer', 'rounded', 'cove', 'trapezoid',
+  'wave-square', 'chamfer-square', 'rounded-square', 'cove-square',
+] as const
 export type BinderShapeId = (typeof BINDER_SHAPES)[number]
+
+/** What fills the ribbon behind the tabs: the theme colour solid, partly see-through, or with glitter. */
+export const BACKGROUNDS = ['solid', 'transparent', 'sand'] as const
+export type BackgroundId = (typeof BACKGROUNDS)[number]
 
 /** The look of the shell, saved with the other settings. */
 export interface Appearance {
   theme: ThemeId
   tabStyle: TabStyleId
   binderShape: BinderShapeId
+  background: BackgroundId
+  /** How see-through Transparent is, 0 to 1. */
+  transparency: number
+  /** How bright the Glitter sand glitter is, 0 to 1. */
+  glitter: number
 }
 
-export const DEFAULT_APPEARANCE: Appearance = { theme: 'cocoa', tabStyle: 'binder', binderShape: 'wave' }
+export const DEFAULT_APPEARANCE: Appearance = {
+  theme: 'cocoa', tabStyle: 'binder', binderShape: 'wave', background: 'solid',
+  transparency: 0.2, glitter: 0.5,
+}
 
 export const DEFAULT_SIDE: Side = 'right'
 export const RIBBON_WIDTH = 53

@@ -9,8 +9,9 @@ Node ships with the app. Formerly part of Tabbar (originally Sidebar).
 
 - Ribbon with pinned sites, drag reordering, drag across the divider to
   pin/unpin, unread badges, favicons, and a URL/search toolbar.
-  Open pins have a small neutral dot below the icon; the selected pin also has
-  a pink edge marker. Unread and media badges remain separate.
+  With the Classic and Chrome shapes, open pins have a small light in the tab's
+  outer bottom corner; the selected pin also has a pink edge marker (Binder tabs
+  show an outer stripe instead). Unread and media badges remain separate.
 - Separate ribbon and content windows, 220–900px draggable pane width, remembered
   width per site, left/right docking, and monitor placement by dragging the grip.
 - Pinning to the desktop reserves the ribbon's width through Windows AppBar.
@@ -39,13 +40,20 @@ Node ships with the app. Formerly part of Tabbar (originally Sidebar).
   moving back into the page hides it without moving or resizing the page.
 - Sized popups retain `window.opener` and their parent profile for OAuth. Ordinary
   new-window links open in tabs.
-- Settings (the gear tab at the bottom of the ribbon, which closes when you pick
-  a tab) with an Appearance page: eight colour themes (Cocoa, Midnight, Graphite,
+- Settings, a page of its own at `thumb-tabs://settings` (open it from the gear
+  tab at the bottom of the ribbon, the ribbon's right-click menu, or by typing the
+  address; Back or picking a tab leaves it, and a second click on the gear
+  collapses the pane). It reopens on the page, folds and scroll you left. The
+  Appearance page (`thumb-tabs://settings/appearance`) has a ribbon Background
+  (Solid; Transparent, with a Transparency slider; or Glitter sand, the solid
+  colour with glitter settled at the bottom and a Glitter brightness slider) and eight colour themes (Cocoa, Midnight, Graphite,
   Forest, Lagoon, Sunset, Dracula and a black-and-white High contrast) and tab
   shapes in two expandable groups. Basic has Classic and Chrome,
   which share one layout and differ only in the highlight (accent bar vs. a
-  rounded block). Binder has five shapes; the bulkier Chamfer, Rounded and Cove
-  are drawn 15% shorter and spaced out so the tabs stay where they were. Changes
+  rounded block). Binder has nine shapes: Wave, Chamfer, Rounded, Cove and
+  Trapezoid, plus Square versions of the first four that meet the page edge at a
+  right angle instead of sweeping out of it. The bulkier Chamfer, Rounded and Cove
+  (and their Square versions) are drawn 15% shorter and spaced out so the tabs stay where they were. Changes
   apply at once and are remembered.
 - Native Windows context menus open inward from the original click position,
   with automatic vertical adjustment near the screen boundary.

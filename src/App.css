@@ -612,9 +612,16 @@ html[data-role='player'] body { background: var(--preview-bg); color: var(--prev
   height: 36px;
   margin: 4px 8px 8px;
   border-radius: 0 0 var(--radius) var(--radius);
-  color: var(--accent);
+  /* Always shown, in a light version of the ribbon's own colour. */
+  color: color-mix(in srgb, #fff 38%, var(--bg-strip));
   cursor: grab;
   touch-action: none;
+  transition: color 160ms ease;
+}
+
+.ribbon-drag-handle:hover,
+.ribbon-drag-handle:active {
+  color: color-mix(in srgb, #fff 55%, var(--bg-strip));
 }
 
 .ribbon-drag-handle:active {
@@ -623,7 +630,6 @@ html[data-role='player'] body { background: var(--preview-bg); color: var(--prev
 
 .ribbon-drag-handle .ribbon-drag-grip-icon {
   display: block;
-  opacity: 0.9;
 }
 
 /* ---- Downloads ---- */

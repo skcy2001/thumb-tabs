@@ -56,6 +56,8 @@ pub struct State {
     /// The pane is showing a full-height panel (toolbar customizer) over
     /// where the page normally sits, so the native page view steps aside.
     pub page_hidden: bool,
+    /// Settings is the page showing in the pane; it has a width of its own.
+    pub settings_open: bool,
     pub animating: bool,
     pub animation: u64,
 }
@@ -86,6 +88,7 @@ impl Default for State {
             outside_since: None,
             laying_out: false,
             page_hidden: false,
+            settings_open: false,
             animating: false,
             animation: 0,
         }
@@ -125,6 +128,9 @@ pub fn create(app: &AppHandle) -> Result<()> {
             .always_on_top(true)
             .skip_taskbar(true)
             .visible(false)
+            // The ribbon can have a see-through background (Settings >
+            // Appearance > Background); its page paints itself opaque otherwise.
+            .transparent(label == "ribbon")
             .build()
             .map_err(err)?;
         let dev = app.config().build.dev_url.clone();
@@ -133,6 +139,7 @@ pub fn create(app: &AppHandle) -> Result<()> {
             WebviewUrl::App(format!("index.html?role={label}").into()),
         )
         .data_directory(data.clone())
+        .transparent(label == "ribbon")
         .disable_drag_drop_handler()
         .on_navigation(move |url| {
             let packaged = (url.scheme() == "tauri" && url.host_str() == Some("localhost"))
@@ -302,12 +309,19 @@ fn layout_inner(app: &AppHandle) -> Result<()> {
         area = monitor_bounds;
     }
     let rw = (model::RIBBON * scale).round() as u32;
-    let pw = ((s
+    let tab_width = s
         .tabs
         .iter()
         .find(|t| Some(t.id) == s.active)
         .map(|t| t.expanded_width)
-        .unwrap_or(s.settings.pane_width)
+        .unwrap_or(s.settings.pane_width);
+    // Settings keeps its own width, once it has been given one.
+    let page_width = if state(app, |st| st.settings_open) {
+        s.settings.settings_width.unwrap_or(tab_width)
+    } else {
+        tab_width
+    };
+    let pw = ((page_width
         + 4.)
         * scale)
         .round() as u32;
@@ -463,6 +477,13 @@ fn page_x(side: Side, fullscreen: bool) -> f64 {
         (false, Side::Right) => 4.,
         (false, Side::Left) => PAGE_EDGE,
     }
+}
+/// Records whether Settings is the page showing in the pane.
+pub fn set_settings_open(app: &AppHandle, open: bool) {
+    state(app, |s| s.settings_open = open);
+}
+pub fn settings_open(app: &AppHandle) -> bool {
+    state(app, |s| s.settings_open)
 }
 /// Steps the active page view aside while a panel in the pane needs its space.
 pub fn set_page_hidden(app: &AppHandle, hidden: bool) -> Result<()> {

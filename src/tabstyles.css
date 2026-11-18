@@ -37,3 +37,28 @@ html[data-tab-style='chrome'] .ribbon-settings-btn,
 html[data-tab-style='chrome'] .ribbon-settings-btn.active {
   border-radius: 12px;
 }
+
+/* ---- Classic and Chrome: an open pinned site shows a small light ----
+   It sits in the tab's outer bottom corner (the screen-edge side), so it never
+   collides with the selection bar or block. Binder tabs show this with their
+   outer stripe instead (binder.css). Unpinned tabs are always open, so they
+   need no light. */
+html:not([data-tab-style='binder']) .pinned-site-btn.open::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-primary) 80%, transparent);
+  box-shadow: 0 0 4px 1px color-mix(in srgb, var(--text-primary) 35%, transparent);
+  pointer-events: none;
+}
+
+html:not([data-tab-style='binder']) [data-side='right'] .pinned-site-btn.open::after {
+  right: 5px;
+}
+
+html:not([data-tab-style='binder']) [data-side='left'] .pinned-site-btn.open::after {
+  left: 5px;
+}
